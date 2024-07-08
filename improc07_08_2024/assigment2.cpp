@@ -9,7 +9,7 @@ using namespace std;
 unsigned char img2[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
 void Second_assignment()
 {
-    const int numIllusion = 100;
+    const int numIllusion = 10;
     unsigned char transparencies[numIllusion];
     unsigned char grayLevels[numIllusion];
     int numberOfBlackHorizontalStrips = 20;

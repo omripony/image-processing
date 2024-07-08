@@ -1,0 +1,54 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\improc07_08_2024\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{B66D5820-3E2B-4419-A8B2-6F6455AFF48D}|ImProc.vcxproj|C:\\Users\\user\\Documents\\GitHub\\image-processing\\improc07_08_2024\\assigment2.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{B66D5820-3E2B-4419-A8B2-6F6455AFF48D}|ImProc.vcxproj|solutionrelative:assigment2.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B66D5820-3E2B-4419-A8B2-6F6455AFF48D}|ImProc.vcxproj|C:\\Users\\user\\Documents\\GitHub\\image-processing\\improc07_08_2024\\ImProc.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{B66D5820-3E2B-4419-A8B2-6F6455AFF48D}|ImProc.vcxproj|solutionrelative:ImProc.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "assigment2.cpp",
+              "DocumentMoniker": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\improc07_08_2024\\assigment2.cpp",
+              "RelativeDocumentMoniker": "assigment2.cpp",
+              "ToolTip": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\improc07_08_2024\\assigment2.cpp",
+              "RelativeToolTip": "assigment2.cpp",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAsAAAAeAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2024-07-08T08:40:00.526Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ImProc.cpp",
+              "DocumentMoniker": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\improc07_08_2024\\ImProc.cpp",
+              "RelativeDocumentMoniker": "ImProc.cpp",
+              "ToolTip": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\improc07_08_2024\\ImProc.cpp",
+              "RelativeToolTip": "ImProc.cpp",
+              "ViewState": "AQIAAAkAAAAAAAAAAAAAABIAAAAEAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2024-07-08T08:39:17.49Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -373,7 +373,10 @@ void LoadBgrImageFromTrueColorBmpFile( unsigned char image[][NUMBER_OF_COLUMNS][
 	res = fread( &bf.bfOffBits, 1, 4, bmpFile );
 
     // Provide some checks:
-    if ( bf.bfType != myBMP_TAG )
+
+    if ( bf.bfType != myBMP_TAG )  //The BMP file must have the correct signature,
+								  //represented by myBMP_TAG. This ensures the file being
+								 // processed is indeed a BMP file.
     {
 	 fclose( bmpFile );
 	 printf("Fatal error: File: \n%s\n  is not BMP file", bmpFileName );     

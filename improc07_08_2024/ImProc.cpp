@@ -16,7 +16,7 @@ int main() {
     // Initialize gray image background to white (=255)
     
     //First_Assignemnt();
-    //Second_assignment();
+    Second_assignment();
     //third_assigment();
     // Wait for user to press a key
     WaitForUserPressKey();
