@@ -1,3 +1,0 @@
-﻿  assigment2.cpp
-C:\Users\user\Documents\GitHub\image-processing\improc07_08_2024\assigment2.cpp(23,9): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-  ImProc.vcxproj -> C:\Users\user\Documents\GitHub\image-processing\improc07_08_2024\ImProc.exe

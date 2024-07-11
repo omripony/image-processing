@@ -71,6 +71,19 @@ void luminosity(unsigned char image[][NUMBER_OF_COLUMNS][NUMBER_OF_COLORS])
 	}
 }
 
+void singleColorChannel(unsigned char image[][NUMBER_OF_COLUMNS][NUMBER_OF_COLORS])
+{
+	for (int row = 0; row < NUMBER_OF_ROWS; row++)
+	{
+		for (int col = 0; col < NUMBER_OF_COLUMNS; col++)
+		{
+			int green = image[row][col][G];
+			image[row][col][R] = green;
+			image[row][col][G] = green;
+			image[row][col][B] = green;
+		}
+	}
+}
 
 void main()
 {
@@ -89,6 +102,10 @@ void main()
 	luminosity(Picture);
 	StoreBgrImageAsGrayBmpFile(Picture, "1_luminosity.bmp");
 
+	LoadBgrImageFromTrueColorBmpFile(Picture, "1.bmp");
+	singleColorChannel(Picture);
+	StoreBgrImageAsGrayBmpFile(Picture, "1_singleColorChannel.bmp");
+
 	//Second picture
 	LoadBgrImageFromTrueColorBmpFile(Picture, "2.bmp");
 	average(Picture);
@@ -102,6 +119,10 @@ void main()
 	luminosity(Picture);
 	StoreBgrImageAsGrayBmpFile(Picture, "2_luminosity.bmp");
 
+	LoadBgrImageFromTrueColorBmpFile(Picture, "2.bmp");
+	singleColorChannel(Picture);
+	StoreBgrImageAsGrayBmpFile(Picture, "2_singleColorChannel.bmp");
+
 	//Third picture
 	LoadBgrImageFromTrueColorBmpFile(Picture,"3.bmp");
 	average(Picture);
@@ -114,6 +135,10 @@ void main()
 	LoadBgrImageFromTrueColorBmpFile(Picture, "3.bmp");
 	luminosity(Picture);
 	StoreBgrImageAsGrayBmpFile(Picture, "3_luminosity.bmp");
+
+	LoadBgrImageFromTrueColorBmpFile(Picture, "3.bmp");
+	singleColorChannel(Picture);
+	StoreBgrImageAsGrayBmpFile(Picture, "3_singleColorChannel.bmp");
 
 	//fourth picture
 
@@ -129,6 +154,10 @@ void main()
 	luminosity(Picture);
 	StoreBgrImageAsGrayBmpFile(Picture, "4_luminosity.bmp");
 
+	LoadBgrImageFromTrueColorBmpFile(Picture, "4.bmp");
+	singleColorChannel(Picture);
+	StoreBgrImageAsGrayBmpFile(Picture, "4_singleColorChannel.bmp");
+
 	//fifth picture
 
 	LoadBgrImageFromTrueColorBmpFile(Picture, "5.bmp");
@@ -143,19 +172,27 @@ void main()
 	luminosity(Picture);
 	StoreBgrImageAsGrayBmpFile(Picture, "5_luminosity.bmp");
 
-	//sixth picture
+	LoadBgrImageFromTrueColorBmpFile(Picture, "5.bmp");
+	singleColorChannel(Picture);
+	StoreBgrImageAsGrayBmpFile(Picture, "5_singleColorChannel.bmp");
 
-	LoadBgrImageFromTrueColorBmpFile(Picture, "6.bmp");
-	average(Picture);
-	StoreBgrImageAsGrayBmpFile(Picture, "6_averge.bmp");
+	////sixth picture
 
-	LoadBgrImageFromTrueColorBmpFile(Picture, "6.bmp");
-	lightness(Picture);
-	StoreBgrImageAsGrayBmpFile(Picture, "6_lightness.bmp");
+	//LoadBgrImageFromTrueColorBmpFile(Picture, "6.bmp");
+	//average(Picture);
+	//StoreBgrImageAsGrayBmpFile(Picture, "6_averge.bmp");
 
-	LoadBgrImageFromTrueColorBmpFile(Picture, "6.bmp");
-	luminosity(Picture);
-	StoreBgrImageAsGrayBmpFile(Picture, "6_luminosity.bmp");
+	//LoadBgrImageFromTrueColorBmpFile(Picture, "6.bmp");
+	//lightness(Picture);
+	//StoreBgrImageAsGrayBmpFile(Picture, "6_lightness.bmp");
+
+	//LoadBgrImageFromTrueColorBmpFile(Picture, "6.bmp");
+	//luminosity(Picture);
+	//StoreBgrImageAsGrayBmpFile(Picture, "6_luminosity.bmp");
+
+	//LoadBgrImageFromTrueColorBmpFile(Picture, "6.bmp");
+	//singleColorChannel(Picture);
+	//StoreBgrImageAsGrayBmpFile(Picture, "6_singleColorChannel.bmp");
 	
 	//seventh picture
 
@@ -170,5 +207,10 @@ void main()
 	LoadBgrImageFromTrueColorBmpFile(Picture, "7.bmp");
 	luminosity(Picture);
 	StoreBgrImageAsGrayBmpFile(Picture, "7_luminosity.bmp");
+
+	LoadBgrImageFromTrueColorBmpFile(Picture, "7.bmp");
+	singleColorChannel(Picture);
+	StoreBgrImageAsGrayBmpFile(Picture, "7_singleColorChannel.bmp");
+
 	WaitForUserPressKey();
 }
