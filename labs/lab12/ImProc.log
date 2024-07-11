@@ -1,0 +1,4 @@
+﻿  ImProc.cpp
+C:\Users\user\Documents\GitHub\image-processing\labs\lab12\ImProc.cpp(80,9): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  ImProcInPlainC.cpp
+  ImProc.vcxproj -> C:\Users\user\Documents\GitHub\image-processing\labs\lab12\ImProc.exe

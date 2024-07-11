@@ -1,2 +1,0 @@
-C:\Users\barak\OneDrive\Desktop\עיבוד תמונה\lab12\BMPLibrary\ImProc.2021-10-17\ImProc.exe
-C:\Users\user\Documents\GitHub\image-processing\labs\lab12\BMPLibrary\ImProc.2021-10-17\ImProc.exe
