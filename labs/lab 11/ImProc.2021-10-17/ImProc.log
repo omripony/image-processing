@@ -1,4 +1,0 @@
-﻿  ImProc.cpp
-C:\Users\barak\OneDrive\Desktop\עיבוד תמונה\lab 11\ImProc.2021-10-17\ImProc.cpp(100,13): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-  ImProcInPlainC.cpp
-  ImProc.vcxproj -> C:\Users\barak\OneDrive\Desktop\עיבוד תמונה\lab 11\ImProc.2021-10-17\ImProc.exe
