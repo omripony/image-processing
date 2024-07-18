@@ -20,6 +20,8 @@ int main() {
 
     return 0;
 }
+
+
 bool checkValidation(s2dPoint p1, s2dPoint p2, unsigned char image[][NUMBER_OF_COLUMNS])
 {
     int top = max(p1.Y, p2.Y);
@@ -45,25 +47,9 @@ bool checkValidation(s2dPoint p1, s2dPoint p2, unsigned char image[][NUMBER_OF_C
     }
     return true;
 }
-void AddGrayRectangle(unsigned char image[][NUMBER_OF_COLUMNS], s2dPoint A, s2dPoint B1, unsigned char transparency, unsigned char grayLevel) {
-    // Ensure coordinates are within bounds and place is not occupied
-    if (!checkValidation(A, B1, image)) {
-        return;
-    }
 
-    int top = max(A.Y, B1.Y);
-    int bottom = min(A.Y, B1.Y);
-    int left = min(A.X, B1.X);
-    int right = max(A.X, B1.X);
 
-    // Apply blending technique to the region of the rectangle
-    for (int row = max(bottom, 0); row < min(top, NUMBER_OF_ROWS); row++) {
-        for (int col = max(left, 0); col < min(right, NUMBER_OF_COLUMNS); col++) {
-            image[row][col] = static_cast<unsigned char>(transparency * (image[row][col] / 255.0)
-                + (255 - transparency) * (grayLevel / 255.0));
-        }
-    }
-}
+
 void InitializeImage(unsigned char image[][NUMBER_OF_COLUMNS], int gray_level) {
     for (int row = 0; row < NUMBER_OF_ROWS; row++) {
         for (int col = 0; col < NUMBER_OF_COLUMNS; col++) {
@@ -78,7 +64,7 @@ void forth_assignment()
     s2dPoint p2(NUMBER_OF_COLUMNS, NUMBER_OF_ROWS);
 
 
-    AddGrayRectangle(grayImg14_1, p1, p2, 0, 255);
+ //   AddGrayRectangle(grayImg14_1, p1, p2, 0, 255);
     DrawSpiral(grayImg14_1);
 
     // Create Gaussian pattern
