@@ -1,0 +1,4 @@
+﻿  ImProc.cpp
+C:\Users\user\Documents\GitHub\image-processing\labs\lab 11\version 2\ImProcInPlainC.h(26,9): warning C4005: 'M_PI': macro redefinition
+  ImProcInPlainC.cpp
+  ImProc.vcxproj -> C:\Users\user\Documents\GitHub\image-processing\labs\lab 11\version 2\ImProc.exe
