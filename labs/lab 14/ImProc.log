@@ -1,4 +1,4 @@
 ﻿  ImProc.cpp
 C:\Users\user\Documents\GitHub\image-processing\labs\lab 14\ImProcInPlainC.h(26,9): warning C4005: 'M_PI': macro redefinition
-C:\Users\user\Documents\GitHub\image-processing\labs\lab 14\ImProc.cpp(69,21): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\user\Documents\GitHub\image-processing\labs\lab 14\ImProc.cpp(46,21): warning C4305: 'initializing': truncation from 'double' to 'float'
   ImProc.vcxproj -> C:\Users\user\Documents\GitHub\image-processing\labs\lab 14\ImProc.exe

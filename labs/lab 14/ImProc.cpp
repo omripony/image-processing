@@ -19,29 +19,6 @@ void InitializeImage(unsigned char* image, int gray_level) {
     }
 }
 
-bool checkValidation(s2dPoint p1, s2dPoint p2, unsigned char* image) {
-    int top = max(p1.Y, p2.Y);
-    int bottom = min(p1.Y, p2.Y);
-    int left = min(p1.X, p2.X);
-    int right = max(p1.X, p2.X);
-
-    if ((0 > p1.X || NUMBER_OF_COLUMNS < p1.X) || (0 > p1.Y || NUMBER_OF_ROWS < p1.Y)) {
-        printf("Out of boundaries\n");
-        return false;
-    }
-    printf("Place in boundaries\n");
-
-    for (int row = top; row < bottom; row++) {
-        for (int col = left; col < right; col++) {
-            if (*(image + row * NUMBER_OF_COLUMNS + col) != 255) {
-                printf("This place is occupied\n");
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
 void DrawGaussian(unsigned char* img, int centerX, int centerY, float sigmaX, float sigmaY) {
     double a, b, c;
     unsigned char d;
