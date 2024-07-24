@@ -82,12 +82,12 @@ int main() {
         AddGrayRectangle(img, points[i][0], points[i][1], transparencies[i], grayLevels[i]);
         // Save the image after each rectangle is added
         char filename[20];
-        sprintf_s(filename, "grayImg_step%d.bmp", i + 1);
+        sprintf_s(filename, "grayImg11_step%d.bmp", i + 1);   
         StoreGrayImageAsGrayBmpFile(img, filename);
     }
 
     // Save the final image
-    StoreGrayImageAsGrayBmpFile(img, "grayImg_final.bmp");
+    StoreGrayImageAsGrayBmpFile(img, "grayImg11.bmp");
 
     // Wait for user to press a key
     WaitForUserPressKey();
