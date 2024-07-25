@@ -1,5 +1,0 @@
-﻿  ImProc.cpp
-C:\Users\user\Documents\GitHub\image-processing\labs\lab 21\version 2\ImProc.cpp(31,13): warning C4244: '=': conversion from 'double' to 'unsigned char', possible loss of data
-  ImProcInPlainC.cpp
-  Generating Code...
-  ImProc.vcxproj -> C:\Users\user\Documents\GitHub\image-processing\labs\lab 21\version 2\ImProc.exe
