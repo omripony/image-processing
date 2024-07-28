@@ -1,4 +1,0 @@
-C:\Users\user\Desktop\לימודים\שנה ד\סמסטר א\עיבוד תמונה\Micro Project P1\V2\ImProc.exe
-C:\Users\user\Desktop\לימודים\שנה ד\סמסטר א\עיבוד תמונה\Micro Project P1\V2\ImProc.pdb
-C:\Users\user\Desktop\לימודים\עיבוד תמונה\רפרנס\Micro Project P1\רפרנסים לפרויקט מסוג Convert Color Image to Grayscale Image\0170-1177-8077-2020-12-28-P1\ImProc.exe
-C:\Users\user\Documents\GitHub\image-processing\MP1\ImProc.exe
