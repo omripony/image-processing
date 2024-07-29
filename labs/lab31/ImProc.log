@@ -1,0 +1,4 @@
+﻿  ImProc.cpp
+C:\Users\user\Documents\GitHub\image-processing\labs\lab31\ImProc.cpp(81,17): warning C4101: 'newCol': unreferenced local variable
+C:\Users\user\Documents\GitHub\image-processing\labs\lab31\ImProc.cpp(81,9): warning C4101: 'newRow': unreferenced local variable
+  ImProc.vcxproj -> C:\Users\user\Documents\GitHub\image-processing\labs\lab31\ImProc.exe
