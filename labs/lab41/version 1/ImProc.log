@@ -1,8 +1,6 @@
 ﻿  ImProc.cpp
-C:\Users\user\Documents\GitHub\image-processing\labs\lab41\version 1\ImProc.cpp(28,43): warning C4244: '=': conversion from 'float' to 'unsigned char', possible loss of data
-C:\Users\user\Documents\GitHub\image-processing\labs\lab41\version 1\ImProc.cpp(34,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-C:\Users\user\Documents\GitHub\image-processing\labs\lab41\version 1\ImProc.cpp(119,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Users\user\Documents\GitHub\image-processing\labs\lab41\version 1\ImProc.cpp(129,48): warning C4305: 'argument': truncation from 'double' to 'float'
-  ImProcInPlainC.cpp
-  Generating Code...
+C:\Users\user\Documents\GitHub\image-processing\labs\lab41\version 1\ImProc.cpp(23,43): warning C4244: '=': conversion from 'float' to 'unsigned char', possible loss of data
+C:\Users\user\Documents\GitHub\image-processing\labs\lab41\version 1\ImProc.cpp(29,23): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\user\Documents\GitHub\image-processing\labs\lab41\version 1\ImProc.cpp(114,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\user\Documents\GitHub\image-processing\labs\lab41\version 1\ImProc.cpp(124,43): warning C4305: 'argument': truncation from 'double' to 'float'
   ImProc.vcxproj -> C:\Users\user\Documents\GitHub\image-processing\labs\lab41\version 1\ImProc.exe

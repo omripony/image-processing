@@ -16,7 +16,7 @@ using namespace std; // Explain some day
 #define BLACKVAL 0
 #define WHITEVAL 255
 
-void Contrast_Brightness_application(unsigned char image[][NUMBER_OF_COLUMNS], float c, float b)
+void Contrast_Brightness_change(unsigned char image[][NUMBER_OF_COLUMNS], float c, float b)
 {
     unsigned char* ptrToPixels = image[0];
     for (int pixel = 0; pixel < NUMBER_OF_COLUMNS * NUMBER_OF_ROWS; pixel++, ptrToPixels++)
@@ -73,7 +73,8 @@ unsigned char MedianValue(unsigned char medianBuffer[], int medianBufferSize)
     return medianBuffer[middle];
 }
 
-void DoMedianFiltration(unsigned char src[][NUMBER_OF_COLUMNS], unsigned char dest[][NUMBER_OF_COLUMNS], unsigned char medianBuffer[], int filterHalfWidth, int filterHalfHeight)
+void DoMedianFiltration(unsigned char src[][NUMBER_OF_COLUMNS], unsigned char dest[][NUMBER_OF_COLUMNS],
+                        unsigned char medianBuffer[], int filterHalfWidth, int filterHalfHeight)
 {
     int medianBufferSize = (2 * filterHalfWidth + 1) * (2 * filterHalfHeight + 1);
     unsigned char* ptrToPixels = dest[0];
@@ -121,7 +122,7 @@ int main()
 
     LoadGrayImageFromTrueColorBmpFile(GrayImage, "clouds.bmp");
     StoreGrayImageAsGrayBmpFile(GrayImage, "clouds1.bmp"); // without contrast and brightness
-    Contrast_Brightness_application(GrayImage, 0.92, 8);
+    Contrast_Brightness_change(GrayImage, 0.92, 8);
     StoreGrayImageAsGrayBmpFile(GrayImage, "A411.bmp");
 
     add_dots_to_pic(GrayImage, 70, WHITEVAL);
