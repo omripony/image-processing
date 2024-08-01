@@ -169,34 +169,7 @@ struct s2dPoint
 		}
 
 	}
-
-	// Example method to display the point
-	void display() const
-	{
-		std::cout << "Point (" << X << ", " << Y << ")" << std::endl;
-	}
-
-	// Setters with validation
-	void setX(int x)
-	{
-		X = x;
-		validate();
-	}
-
-	void setY(int y)
-	{
-		Y = y;
-		validate();
-	}
-
-	void setXY(int x, int y)
-	{
-		X = x;
-		Y = y;
-		validate();
-	}
 };
-
 
 
 void AddGrayRectangle(unsigned char image[][NUMBER_OF_COLUMNS], s2dPoint A,
