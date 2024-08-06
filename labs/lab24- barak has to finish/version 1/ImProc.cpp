@@ -1,144 +1,205 @@
-#include <stdio.h>    // for printf
-#include <conio.h>    // for getch
-#include <iostream>   // for cin, cout
-#include <fstream>    // for file IO
-#include <cmath>
-#include <ctime>      // for random seed
-#include <cstdlib>    // for rand
-#include "ImProcInPlainC.h"
+#include <stdio.h> // for printf
+#include <conio.h> // for getch
+#include <stdlib.h>// for rand
+#include <time.h>// time for seed
+#include <iostream> // for cin, cout
+#include <fstream>  // For file IO
+#include <random>   // For better random number generation
+#include <chrono>   // For seeding with current time
 
 using namespace std;
-unsigned char grayImage24_part2[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
-unsigned char grayImg24_1[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
-unsigned char grayImg24[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
-unsigned char gauss[6][NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
 
-void InitializeImage(unsigned char image[][NUMBER_OF_COLUMNS], int gray_level);
-void DrawGaussian(unsigned char img[][NUMBER_OF_COLUMNS], int centerX, int centerY, float sigmaX, float sigmaY);
-void blend(unsigned char img_src1[][NUMBER_OF_COLUMNS], unsigned char img_src2[][NUMBER_OF_COLUMNS], unsigned char img_dst[][NUMBER_OF_COLUMNS]);
+// Math calculations
+#define _USE_MATH_DEFINES
+#include <math.h>
 
-int main() {
-    srand((unsigned int)time(NULL)); // Initialize random seed
+// BMP Library
+#include "ImProcInPlainC.h"
 
-    lab24_assignment_part1();
-    lab24_assignment_part2();
-    // Wait for user to press a key
-    
+#define myMAXCOLORS 256
 
-    return 0;
+// Struct for defining a region of interest (ROI)
+struct ROI
+{
+	int top;
+	int bottom;
+	int left;
+	int right;
+
+	// Method to clip the ROI to the bounds of the image
+	void ClipToBounds(int maxRows, int maxCols)
+	{
+		// Clip the ROI's top and bottom to [0, maxRows)
+		if (top < 0) top = 0;
+		if (bottom > maxRows) bottom = maxRows;
+
+		// Clip the ROI's left and right to [0, maxCols)
+		if (left < 0) left = 0;
+		if (right > maxCols) right = maxCols;
+
+		// Ensure ROI is valid (top < bottom and left < right)
+		if (top >= bottom) bottom = top;
+		if (left >= right) right = left;
+	}
+};
+
+/* Adds a Gaussian distribution to the image at the given coordinates */
+void DrawGaussian(unsigned char img[][NUMBER_OF_COLUMNS], int centerX, int centerY, float sigmaX, float sigmaY)
+{
+	double a, b, c;
+	unsigned char d;
+	for (int row = 0; row < NUMBER_OF_ROWS; row++)
+	{
+		for (int column = 0; column < NUMBER_OF_COLUMNS; column++)
+		{
+			a = (column - centerX) / sigmaX;
+			b = (row - centerY) / sigmaY;
+			c = 255.0 * exp(-a * a - b * b);
+			d = (unsigned char)(int)(c + 0.5);
+			img[row][column] = (d > 10) ? d : img[row][column];
+		}
+	}
 }
 
-void InitializeImage(unsigned char image[][NUMBER_OF_COLUMNS], int gray_level) {
-    for (int row = 0; row < NUMBER_OF_ROWS; row++) {
-        for (int col = 0; col < NUMBER_OF_COLUMNS; col++) {
-            image[row][col] = gray_level;
-        }
-    }
+// Initialize a lookup table (LUT) for thresholding
+void InitThresholdLUT(unsigned char* LUT, unsigned char minVal, unsigned char maxVal)
+{
+	for (int i = 0; i < myMAXCOLORS; i++)
+	{
+		// If pixel value is within the range [minVal, maxVal], set to white (255)
+		// Else, set to black (0)
+		if (i >= minVal && i <= maxVal)
+			LUT[i] = 255; // White
+		else
+			LUT[i] = 0;   // Black
+	}
 }
 
-bool IsFarEnough(int centerX, int centerY, int previousCenters[][2], int count, int minDistance) {
-    for (int i = 0; i < count; i++) {
-        int dx = centerX - previousCenters[i][0];
-        int dy = centerY - previousCenters[i][1];
-        if (sqrt(dx * dx + dy * dy) < minDistance) {
-            return false;
-        }
-    }
-    return true;
+// Apply the LUT to the grayscale image
+void ImposeLUT(unsigned char GrayImage[][NUMBER_OF_COLUMNS], unsigned char* LUT)
+{
+	unsigned char* ptrToPixels = GrayImage[0];
+	for (int pixel = 0; pixel < NUMBER_OF_ROWS * NUMBER_OF_COLUMNS; pixel++)
+		*ptrToPixels++ = LUT[*ptrToPixels];
 }
 
-void lab24_assignment_part1() {
-    s2dPoint p1(0, 0);
-    s2dPoint p2(NUMBER_OF_COLUMNS, NUMBER_OF_ROWS);
+// Count elements in the image based on the ROI
+int ContElemInPicture(unsigned char GrayImage[][NUMBER_OF_COLUMNS], ROI MyROI)
+{
+	int elementCount = 0; // Variable to count elements
+	unsigned char* pixelPtr;
 
-    InitializeImage(grayImg24_1, 0);
+	for (int row = MyROI.top; row < MyROI.bottom; row++)
+	{
+		pixelPtr = GrayImage[row] + MyROI.left;
+		for (int col = MyROI.left; col < MyROI.right; col++, pixelPtr++)
+		{
+			if (*pixelPtr < 127)
+			{
+				elementCount++;
+				*pixelPtr = 50; // Mark the element
+			}
+			else
+			{
+				*pixelPtr = 200; // Mark as background
+			}
+		}
+	}
 
-    int previousCenters[6][2];
-    int minDistance = 50;
-
-    // Create 6 Gaussian patterns with random parameters
-    for (int i = 0; i < 6; i++) {
-        int centerX, centerY;
-        do {
-            centerX = rand() % NUMBER_OF_COLUMNS;
-            centerY = rand() % NUMBER_OF_ROWS;
-        } while (!IsFarEnough(centerX, centerY, previousCenters, i, minDistance));
-
-        previousCenters[i][0] = centerX;
-        previousCenters[i][1] = centerY;
-
-        float sigmaX = (rand() % 50) + 30; // Random sigmaX between 30 and 80
-        float sigmaY = (rand() % 50) + 30; // Random sigmaY between 30 and 80
-
-        DrawGaussian(gauss[i], centerX, centerY, sigmaX, sigmaY);
-
-        // Store each Gaussian image separately
-        char filename[20];
-        sprintf(filename, "gauss%d.bmp", i + 1);
-        StoreGrayImageAsGrayBmpFile(gauss[i], filename);
-    }
-
-    // Blend all Gaussian patterns together
-    InitializeImage(grayImg24, 127); // Initialize the final image
-
-    for (int i = 0; i < 6; i++) {
-        blend(grayImg24, gauss[i], grayImg24);
-    }
-
-    // Blend the resulting Gaussian image with the initial spiral image
-    blend(grayImg24, grayImg24_1, grayImg24);
-
-    // Store images for checking
-    StoreGrayImageAsGrayBmpFile(grayImg24, "Image241.bmp");
+	return elementCount;
 }
 
-void DrawGaussian(unsigned char img[][NUMBER_OF_COLUMNS], int centerX, int centerY, float sigmaX, float sigmaY) {
-    double a, b, c;
-    unsigned char d;
-    for (int row = 0; row < NUMBER_OF_ROWS; row++) {
-        for (int column = 0; column < NUMBER_OF_COLUMNS; column++) {
-            a = (column - centerX) / (sigmaX * 2);
-            b = (row - centerY) / (sigmaY * 2);
-            c = 255.0 * exp(-a * a - b * b);
-            d = static_cast<unsigned char>(c + 0.5);
-            img[row][column] = d;
-        }
-    }
+// Declare the gray image and example Gaussian image
+unsigned char ProccesIMG[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+unsigned char gaussian[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+unsigned char LUT[256];
+
+void main()
+{
+	ROI MyROI;
+	int X, Y, BPixelCountElem = 0, BPixelCount = 0;
+	// Define ROI for the whole image
+	MyROI.top = 0;
+	MyROI.bottom = NUMBER_OF_ROWS;
+	MyROI.left = 0;
+	MyROI.right = NUMBER_OF_COLUMNS;
+	// Initialize random number generator with current time
+	std::mt19937 rng(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
+
+	// Create uniform distribution for X and Y
+	std::uniform_int_distribution<int> distX(0, NUMBER_OF_COLUMNS - 1);
+	std::uniform_int_distribution<int> distY(0, NUMBER_OF_ROWS - 1);
+
+	// Initialize both images to black
+	for (int row = 0; row < NUMBER_OF_ROWS; row++)
+		for (int col = 0; col < NUMBER_OF_COLUMNS; col++)
+		{
+			ProccesIMG[row][col] = 0;
+			gaussian[row][col] = 0;
+		}
+
+	// Draw Gaussian distributions in random locations
+	for (int i = 0; i < 6; i++) {
+		X = distX(rng); // Generate a random X coordinate
+		Y = distY(rng); // Generate a random Y coordinate
+		DrawGaussian(ProccesIMG, X, Y, 10, 10);
+	}
+
+	// Save the processed image
+	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Image241.bmp");
+	InitThresholdLUT(LUT, 200, 255);
+	// Apply LUT on the Gaussian image
+	ImposeLUT(gaussian, LUT);
+	BPixelCountElem = ContElemInPicture(gaussian, MyROI);
+	
+
+	// Draw a central Gaussian
+	DrawGaussian(gaussian, int(NUMBER_OF_ROWS / 2), int(NUMBER_OF_COLUMNS / 2), 10, 10);
+
+	
+
+	// Count the number of black pixels in the Gaussian imag
+	// Initialize LUT for thresholding
+	InitThresholdLUT(LUT, 200, 255);
+	// Apply LUT on ProccesIMG
+	ImposeLUT(ProccesIMG, LUT);
+	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Image_lut.bmp");
+	// Count the number of black pixels in ProccesIMG
+	BPixelCount = ContElemInPicture(ProccesIMG, MyROI);
+
+	// Output the number of Gaussian elements found
+	cout << "Found " << int(BPixelCount / BPixelCountElem + 0.5) << " Gaussian elements." << endl;
+
+	// Load a color image and convert to grayscale
+	LoadGrayImageFromTrueColorBmpFile(ProccesIMG, "Image242_color.bmp");
+	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Image242_gray.bmp");
+	// Initialize LUT for thresholding the new image
+	InitThresholdLUT(LUT, 60, 65);
+
+	// Apply LUT on the processed image
+	ImposeLUT(ProccesIMG, LUT);
+
+	// Measure the size of elements in a specific ROI
+	MyROI.top = 127;
+	MyROI.bottom = 192;
+	MyROI.left = 9;
+	MyROI.right = 76;
+	BPixelCountElem = ContElemInPicture(ProccesIMG, MyROI);
+
+	// Count black pixels in the entire image
+	MyROI.top = 0;
+	MyROI.bottom = NUMBER_OF_ROWS;
+	MyROI.left = 0;
+	MyROI.right = NUMBER_OF_COLUMNS-10;
+	BPixelCount = ContElemInPicture(ProccesIMG, MyROI);
+
+	// Save the final processed image
+	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Image242.bmp");
+
+	// Output the number of elements found in the processed image
+	cout << "Found " << int(BPixelCount / BPixelCountElem + 0.5) << " elements in the processed image." << endl;
+
+	// Wait for user input before exiting
+	WaitForUserPressKey();
 }
 
-void DrawSpiral(unsigned char img[][NUMBER_OF_COLUMNS]) {
-    InitializeImage(img, 255);
-
-    float alfa = 0;
-    int rad = 0;
-    int centerX = NUMBER_OF_COLUMNS / 2;
-    int centerY = NUMBER_OF_ROWS / 2;
-
-    int maxRadius = std::min(centerX, centerY);
-    float increment = M_PI / 20000;
-
-    while (rad < maxRadius) {
-        rad = static_cast<int>(3.5 * alfa);
-        for (int i = 0; i < 3; i++) {
-            int x = static_cast<int>(centerY + (rad + i) * sin(alfa));
-            int y = static_cast<int>(centerX + (rad + i) * cos(alfa));
-            if (x >= 0 && x < NUMBER_OF_ROWS && y >= 0 && y < NUMBER_OF_COLUMNS) {
-                img[x][y] = 0;
-            }
-        }
-        alfa += increment;
-    }
-}
-
-void blend(unsigned char img_src1[][NUMBER_OF_COLUMNS], unsigned char img_src2[][NUMBER_OF_COLUMNS], unsigned char img_dst[][NUMBER_OF_COLUMNS]) {
-    for (int row = 0; row < NUMBER_OF_ROWS; row++) {
-        for (int column = 0; column < NUMBER_OF_COLUMNS; column++) {
-            img_dst[row][column] = max(img_src1[row][column], img_src2[row][column]) * 0.85;
-        }
-    }
-}
-
-
-void lab24_assignment_part2() {
-    LoadGrayImageFromTrueColorBmpFile(grayImage24_part2, "tomato1.bmp");
-}

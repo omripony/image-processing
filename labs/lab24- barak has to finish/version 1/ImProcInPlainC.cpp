@@ -333,7 +333,7 @@ void StoreGrayImageAsGrayBmpFile( unsigned char image[][NUMBER_OF_COLUMNS],
     }
 	
 	fclose( bmpFile ); 
-    //printf("Gray BMP File\n   %s\n      was created\n", bmpFileName );
+    printf("Gray BMP File\n   %s\n      was created\n", bmpFileName );
 }
 
 void LoadBgrImageFromTrueColorBmpFile( unsigned char image[][NUMBER_OF_COLUMNS][NUMBER_OF_COLORS],

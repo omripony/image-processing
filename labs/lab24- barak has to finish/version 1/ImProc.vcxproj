@@ -67,9 +67,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ImProc.cpp">
-      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SDLCheck>
-    </ClCompile>
+    <ClCompile Include="ImProc.cpp" />
     <ClCompile Include="ImProcInPlainC.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,5 @@
 ﻿  ImProc.cpp
-C:\Users\user\Desktop\ImProc.cpp(70,22): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-C:\Users\user\Desktop\ImProc.cpp(71,22): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
-C:\Users\user\Desktop\ImProc.cpp(77,9): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\Users\user\Desktop\ImProc.cpp(118,21): warning C4305: 'initializing': truncation from 'double' to 'float'
-C:\Users\user\Desktop\ImProc.cpp(136,86): warning C4244: '=': conversion from 'double' to 'unsigned char', possible loss of data
-  ImProc.vcxproj -> C:\Users\user\Desktop\ImProc.exe
+C:\Users\user\Documents\GitHub\image-processing\labs\lab24- barak has to finish\version 1\ImProc.cpp(19,9): warning C4005: 'myMAXCOLORS': macro redefinition
+  ImProcInPlainC.cpp
+  Generating Code...
+  ImProc.vcxproj -> C:\Users\user\Documents\GitHub\image-processing\labs\lab24- barak has to finish\version 1\ImProc.exe
