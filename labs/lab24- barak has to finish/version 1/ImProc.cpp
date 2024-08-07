@@ -1,3 +1,4 @@
+
 #include <stdio.h> // for printf
 #include <conio.h> // for getch
 #include <stdlib.h>// for rand
@@ -42,6 +43,12 @@ struct ROI
 		if (left >= right) right = left;
 	}
 };
+
+void InitThresholdLUTpart1(unsigned char* LUT, unsigned char Threshold, int B_Or_W)
+{
+	for (int i = 0; i < myMAXCOLORS; i++)
+		LUT[i] = (255 - B_Or_W * 255) * (i > Threshold) + 255 * (i <= Threshold && B_Or_W);
+}
 
 /* Adds a Gaussian distribution to the image at the given coordinates */
 void DrawGaussian(unsigned char img[][NUMBER_OF_COLUMNS], int centerX, int centerY, float sigmaX, float sigmaY)
@@ -118,11 +125,13 @@ void main()
 {
 	ROI MyROI;
 	int X, Y, BPixelCountElem = 0, BPixelCount = 0;
+
 	// Define ROI for the whole image
 	MyROI.top = 0;
 	MyROI.bottom = NUMBER_OF_ROWS;
 	MyROI.left = 0;
 	MyROI.right = NUMBER_OF_COLUMNS;
+
 	// Initialize random number generator with current time
 	std::mt19937 rng(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
 
@@ -130,6 +139,7 @@ void main()
 	std::uniform_int_distribution<int> distX(0, NUMBER_OF_COLUMNS - 1);
 	std::uniform_int_distribution<int> distY(0, NUMBER_OF_ROWS - 1);
 
+	//part1
 	// Initialize both images to black
 	for (int row = 0; row < NUMBER_OF_ROWS; row++)
 		for (int col = 0; col < NUMBER_OF_COLUMNS; col++)
@@ -138,6 +148,7 @@ void main()
 			gaussian[row][col] = 0;
 		}
 
+	//part1
 	// Draw Gaussian distributions in random locations
 	for (int i = 0; i < 6; i++) {
 		X = distX(rng); // Generate a random X coordinate
@@ -147,29 +158,21 @@ void main()
 
 	// Save the processed image
 	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Image241.bmp");
-	InitThresholdLUT(LUT, 200, 255);
+	InitThresholdLUTpart1(LUT, 200, 1);
+	DrawGaussian(gaussian, int(NUMBER_OF_ROWS / 2), int(NUMBER_OF_COLUMNS / 2), 10, 10);
 	// Apply LUT on the Gaussian image
 	ImposeLUT(gaussian, LUT);
 	BPixelCountElem = ContElemInPicture(gaussian, MyROI);
-	
 
-	// Draw a central Gaussian
-	DrawGaussian(gaussian, int(NUMBER_OF_ROWS / 2), int(NUMBER_OF_COLUMNS / 2), 10, 10);
-
-	
-
-	// Count the number of black pixels in the Gaussian imag
-	// Initialize LUT for thresholding
-	InitThresholdLUT(LUT, 200, 255);
-	// Apply LUT on ProccesIMG
 	ImposeLUT(ProccesIMG, LUT);
-	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Image_lut.bmp");
-	// Count the number of black pixels in ProccesIMG
+	
 	BPixelCount = ContElemInPicture(ProccesIMG, MyROI);
 
 	// Output the number of Gaussian elements found
 	cout << "Found " << int(BPixelCount / BPixelCountElem + 0.5) << " Gaussian elements." << endl;
 
+
+	//part2
 	// Load a color image and convert to grayscale
 	LoadGrayImageFromTrueColorBmpFile(ProccesIMG, "Image242_color.bmp");
 	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Image242_gray.bmp");
@@ -190,7 +193,7 @@ void main()
 	MyROI.top = 0;
 	MyROI.bottom = NUMBER_OF_ROWS;
 	MyROI.left = 0;
-	MyROI.right = NUMBER_OF_COLUMNS-10;
+	MyROI.right = NUMBER_OF_COLUMNS - 10;
 	BPixelCount = ContElemInPicture(ProccesIMG, MyROI);
 
 	// Save the final processed image
@@ -202,4 +205,3 @@ void main()
 	// Wait for user input before exiting
 	WaitForUserPressKey();
 }
-
