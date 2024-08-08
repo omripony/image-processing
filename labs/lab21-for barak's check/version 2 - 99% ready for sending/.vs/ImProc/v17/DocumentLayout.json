@@ -1,13 +1,13 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\labs\\lab 21\\version 2\\",
+  "WorkspaceRootPath": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\labs\\lab21-for barak\u0027s check\\version 2 - 99% ready for sending\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{B66D5820-3E2B-4419-A8B2-6F6455AFF48D}|ImProc.vcxproj|C:\\Users\\user\\Documents\\GitHub\\image-processing\\labs\\lab 21\\version 2\\ImProc.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{B66D5820-3E2B-4419-A8B2-6F6455AFF48D}|ImProc.vcxproj|C:\\Users\\user\\Documents\\GitHub\\image-processing\\labs\\lab21-for barak\u0027s check\\version 2 - 99% ready for sending\\ImProc.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{B66D5820-3E2B-4419-A8B2-6F6455AFF48D}|ImProc.vcxproj|solutionrelative:ImProc.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B66D5820-3E2B-4419-A8B2-6F6455AFF48D}|ImProc.vcxproj|C:\\Users\\user\\Documents\\GitHub\\image-processing\\labs\\lab 21\\version 2\\ImProcInPlainC.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{B66D5820-3E2B-4419-A8B2-6F6455AFF48D}|ImProc.vcxproj|C:\\Users\\user\\Documents\\GitHub\\image-processing\\labs\\lab21-for barak\u0027s check\\version 2 - 99% ready for sending\\ImProcInPlainC.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{B66D5820-3E2B-4419-A8B2-6F6455AFF48D}|ImProc.vcxproj|solutionrelative:ImProcInPlainC.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
@@ -24,9 +24,9 @@
               "$type": "Document",
               "DocumentIndex": 1,
               "Title": "ImProcInPlainC.h",
-              "DocumentMoniker": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\labs\\lab 21\\version 2\\ImProcInPlainC.h",
+              "DocumentMoniker": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\labs\\lab21-for barak\u0027s check\\version 2 - 99% ready for sending\\ImProcInPlainC.h",
               "RelativeDocumentMoniker": "ImProcInPlainC.h",
-              "ToolTip": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\labs\\lab 21\\version 2\\ImProcInPlainC.h",
+              "ToolTip": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\labs\\lab21-for barak\u0027s check\\version 2 - 99% ready for sending\\ImProcInPlainC.h",
               "RelativeToolTip": "ImProcInPlainC.h",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
@@ -36,11 +36,11 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "ImProc.cpp",
-              "DocumentMoniker": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\labs\\lab 21\\version 2\\ImProc.cpp",
+              "DocumentMoniker": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\labs\\lab21-for barak\u0027s check\\version 2 - 99% ready for sending\\ImProc.cpp",
               "RelativeDocumentMoniker": "ImProc.cpp",
-              "ToolTip": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\labs\\lab 21\\version 2\\ImProc.cpp",
+              "ToolTip": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\labs\\lab21-for barak\u0027s check\\version 2 - 99% ready for sending\\ImProc.cpp",
               "RelativeToolTip": "ImProc.cpp",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABQAAAALAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAF0AAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-07-24T08:24:54.293Z",
               "EditorCaption": ""
