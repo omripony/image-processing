@@ -1,0 +1,55 @@
+﻿  ImProc.cpp
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(14,16): error C2065: 'c2dByteGrayImage': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(14,34): error C2065: 'LayerName': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(14,45): error C2065: 'c2dFloatGrayImage': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(14,64): error C2065: 'filterInFD': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(14,76): error C2059: syntax error: 'const'
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(19,16): error C2065: 'c2dByteGrayImage': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(19,34): error C2065: 'LayerName': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(19,45): error C2065: 'c2dFloatGrayImage': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(19,64): error C2065: 'filterInFD': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(19,76): error C2059: syntax error: 'const'
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(19,151): error C2143: syntax error: missing ';' before '{'
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(19,151): error C2447: '{': missing function header (old-style formal list?)
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(32,23): error C2065: 'c2dFloatGrayImage': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(32,42): error C2065: 'realPart': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(32,52): error C2065: 'c2dFloatGrayImage': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(32,71): error C2065: 'imagPart': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(32,81): error C2059: syntax error: 'const'
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(32,128): error C2143: syntax error: missing ';' before '{'
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(32,128): error C2447: '{': missing function header (old-style formal list?)
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(74,5): error C2065: 'c2dFloatGrayImage': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(74,23): error C2146: syntax error: missing ';' before identifier 'Filter'
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(74,23): error C3861: 'Filter': identifier not found
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(75,23): error C2065: 'Filter': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(75,5): error C3861: 'CreateFilterImage': identifier not found
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(77,5): error C2065: 'c2dFloatGrayImage': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(77,23): error C2146: syntax error: missing ';' before identifier 'FilterRe'
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(77,32): error C2065: 'Filter': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(77,23): error C3861: 'FilterRe': identifier not found
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(78,5): error C2065: 'c2dFloatGrayImage': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(78,23): error C2146: syntax error: missing ';' before identifier 'FilterIm'
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(78,32): error C2065: 'FilterRe': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(78,57): error C2065: 'FilterRe': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(78,23): error C3861: 'FilterIm': identifier not found
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(79,5): error C2065: 'c2dFloatGrayImage': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(79,23): error C2146: syntax error: missing ';' before identifier 'Res'
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(79,27): error C2065: 'Filter': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(79,23): error C3861: 'Res': identifier not found
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(81,19): error C2065: 'FilterRe': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(82,5): error C2065: 'FilterRe': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(83,19): error C2065: 'FilterIm': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(85,11): error C2065: 'FilterRe': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(85,21): error C2065: 'FilterIm': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(86,5): error C2065: 'FilterRe': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(88,15): error C2065: 'Res': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(88,20): error C2065: 'FilterRe': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(88,30): error C2065: 'FilterIm': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(88,5): error C3861: 'Magnitude': identifier not found
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(89,5): error C2065: 'Res': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(91,5): error C2065: 'c2dByteGrayImage': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(91,22): error C2146: syntax error: missing ';' before identifier 'OriginalImage'
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(91,22): error C3861: 'OriginalImage': identifier not found
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(92,15): error C2065: 'OriginalImage': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(92,30): error C2065: 'Res': undeclared identifier
+C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(92,5): error C3861: 'BlurImage': identifier not found
