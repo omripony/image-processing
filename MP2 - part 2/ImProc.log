@@ -1,6 +1,3 @@
 ﻿  ImProc.cpp
 C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.cpp(22,9): warning C4005: 'myMAXCOLORS': macro redefinition
-  ImProcInPlainC.cpp
-  PrimeFFTn.cpp
-  Generating Code...
   ImProc.vcxproj -> C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.exe

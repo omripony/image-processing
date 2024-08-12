@@ -35,11 +35,49 @@ tFloat floatFilter[SIZE_256][SIZE_256];
 
 //These are 2 filter kernels used for convolution operations. The values inside these matrices represent the filter coefficients.
 //these kernels are 5x5 HPF kernels - can be found in the web
-double kernel2[2 * FILTER_HALF_HEIGHT + 1][2 * FILTER_HALF_WIDTH + 1] =
-{ -1,-3,-4,-3,-1,-3,0,6,0,-3,-4,6,40,6,-4,-3,0,6,0,-3,-1,-3,-4,-3,-1 };
 
-double kernel1[2 * FILTER_HALF_HEIGHT + 1][2 * FILTER_HALF_WIDTH + 1] =
-{ -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,25,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1 };
+double kernel_1[2 * FILTER_HALF_HEIGHT + 1][2 * FILTER_HALF_HEIGHT + 1] = {
+	{-1, -1, -1, -1, -1},
+	{-1, -1, -1, -1, -1},
+	{-1, -1, 25, -1, -1},
+	{-1, -1, -1, -1, -1},
+	{-1, -1, -1, -1, -1}
+};
+
+
+double kernel_2[2 * FILTER_HALF_HEIGHT +1][2 * FILTER_HALF_HEIGHT + 1] = 
+{
+	{-1, -3, -4, -3, -1},
+	{-3,  0,  6,  0, -3},
+	{-4,  6, 40,  6, -4},
+	{-3,  0,  6,  0, -3},
+	{-1, -3, -4, -3, -1}
+};
+
+
+double kernel_3[2 * FILTER_HALF_HEIGHT + 1][2 * FILTER_HALF_HEIGHT + 1] = {
+	{-1, -1, -1, -1, -1},
+	{-1,  2,  2,  2, -1},
+	{-1,  2,  8,  2, -1},
+	{-1,  2,  2,  2, -1},
+	{-1, -1, -1, -1, -1}
+};
+
+double kernel_4[2 * FILTER_HALF_HEIGHT + 1][2 * FILTER_HALF_HEIGHT + 1] =
+{
+	{-1, -1, -1, -1, -1},
+	{-1,  1,  1,  1, -1},
+	{-1,  1, 16,  1, -1},
+	{-1,  1,  1,  1, -1},
+	{-1, -1, -1, -1, -1}
+};
+
+double kernel_5[FILTER_HALF_HEIGHT+1][FILTER_HALF_HEIGHT+1] =
+{
+	{ 0,   -0.25,  0   },
+	{-0.25, 2,   -0.25},
+	{ 0,   -0.25,  0   }
+};
 
 unsigned char temp_dest[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
 
@@ -224,6 +262,7 @@ void PrepareGaussianFilter(double filter[], int filter_size, double sigma)
 }
 
 
+//version 1 of work() function - include a simple rectangle HPF/LPF already in FD:
 //void Work(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS],int filter_size)
 //{
 //	cout << "FFT Filtration in nearly Plain C" << endl;
@@ -275,6 +314,78 @@ void PrepareGaussianFilter(double filter[], int filter_size, double sigma)
 //	}
 //}
 
+
+//version 2 of work() function - include a gauusian filter creation and FFT it to FD before filteration:
+//void Work(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
+//{
+//	cout << "FFT Filtration in nearly Plain C" << endl;
+//
+//	// Step 1: Input image processing - FFT in preparation for the filtration process in DoFiltrationInFD
+//	for (int i = 0; i < NUMBER_OF_ROWS; i++) // Copy image data from the ProccesIMG array to the floatRe array
+//	{
+//		for (int j = 0; j < NUMBER_OF_COLUMNS; j++)
+//			floatRe[i][j] = ProccesIMG[i][j];
+//	}
+//	CreateRectangle(floatRe, NUMBER_OF_ROWS / 4, NUMBER_OF_COLUMNS / 4, 200, 50);
+//	CreateRectangle(floatIm, NUMBER_OF_ROWS / 4, NUMBER_OF_COLUMNS / 4, 0, 0); // Kind of clean
+//	Convert(floatRe, byteOriginal, 0, 255);
+//
+//	ShiftHalfSize(floatRe);  // preprocessing step before performing an FFT to center the low frequencies in the FFT output.
+//	ShiftHalfSize(floatIm);
+//
+//	DoFFT(floatRe, floatIm, FORWARD_FFT, NORMALIZE_BY_SQRT);  // performs the Fast Fourier Transform on the image, converting it
+//															 //  from the spatial domain to the frequency domain. This transformation separates
+//															//   the image into its frequency components, stored in floatRe (real part) and 
+//														   //    floatIm (imaginary part).
+//														   
+//	//****** THIS PART IS THE CHANGE FROM THE GIVEN CODE BE SAMUEL - FOR GAUSSIAN FILTER (RATHER THAN RECTANGLE LPF) - ******* HAS TO BE CHECKED!
+//	// Step 2: Prepare the Gaussian filter
+//	double gaussianFilter[filter_size];
+//	PrepareGaussianFilter(gaussianFilter, filter_size, 1.0);  //A 1D Gaussian filter is created using the PrepareGaussianFilter function
+//
+//	//The 1D Gaussian filter is extended to a 2D filter by multiplying the 1D Gaussian values in both the x and y dimensions,
+//   // storing the result in floatFilter.
+//	for (int i = 0; i < NUMBER_OF_ROWS; i++)
+//	{
+//		for (int j = 0; j < NUMBER_OF_COLUMNS; j++)
+//		{
+//			floatFilter[i][j] = gaussianFilter[i % filter_size] * gaussianFilter[j % filter_size];
+//		}
+//	}
+//
+//	// Perform FFT on the Gaussian filter to move it to the frequency domain
+//	tFloat floatImFilter[SIZE_256][SIZE_256] = { 0 };
+//	ShiftHalfSize(floatFilter); // Shift before FFT
+//	DoFFT(floatFilter, floatImFilter, FORWARD_FFT, NORMALIZE_BY_SQRT);
+//	ShiftHalfSize(floatFilter); // Shift back after FFT
+//
+//	//******* END OF THE NEW PART - GAUSSIAN FILTER CREATION AND FFT ************
+//
+//	// Step 3: Filtration in the frequency domain
+//	DoFiltrationInFD(floatRe, floatIm, floatFilter);
+//
+//	// Convert the filtered image back to a byte image
+//	Convert(floatRe, byteOriginal, 0, 50);
+//
+//	// Step 4: Perform inverse FFT to return to the spatial domain
+//	DoFFT(floatRe, floatIm, REVERSE_FFT, NORMALIZE_BY_SQRT);
+//	ShiftHalfSize(floatRe);
+//	ShiftHalfSize(floatIm);
+//
+//	OptimalConvert(floatRe, byteOriginal);
+//
+//	// Step 5: Copy the result back to ProccesIMG
+//	for (int i = 0; i < NUMBER_OF_ROWS; i++)
+//	{
+//		for (int j = 0; j < NUMBER_OF_COLUMNS; j++)
+//			ProccesIMG[i][j] = byteOriginal[i][j];
+//	}
+//}
+
+//version 3 of work() function - include a gauusian filter creation and FFT it to FD before filteration + (addition) dynamic alocation for the
+//size of the gaussian filter buffer according to the different sizes we want to try.
+#include <vector>
+
 void Work(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
 {
 	cout << "FFT Filtration in nearly Plain C" << endl;
@@ -289,16 +400,21 @@ void Work(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
 	CreateRectangle(floatIm, NUMBER_OF_ROWS / 4, NUMBER_OF_COLUMNS / 4, 0, 0); // Kind of clean
 	Convert(floatRe, byteOriginal, 0, 255);
 
-	ShiftHalfSize(floatRe);  // Shift image data for FFT
+	ShiftHalfSize(floatRe);  // preprocessing step before performing an FFT to center the low frequencies in the FFT output.
 	ShiftHalfSize(floatIm);
 
-	DoFFT(floatRe, floatIm, FORWARD_FFT, NORMALIZE_BY_SQRT);  // Perform the FFT on the image, converting it to the frequency domain
+	DoFFT(floatRe, floatIm, FORWARD_FFT, NORMALIZE_BY_SQRT);  // performs the Fast Fourier Transform on the image, converting it
+	// from the spatial domain to the frequency domain. This transformation separates
+	// the image into its frequency components, stored in floatRe (real part) and 
+	// floatIm (imaginary part).
 
+	//****** THIS PART IS THE CHANGE FROM THE GIVEN CODE BY SAMUEL - FOR GAUSSIAN FILTER (RATHER THAN RECTANGLE LPF) - ******* HAS TO BE CHECKED!
 	// Step 2: Prepare the Gaussian filter
-	double gaussianFilter[SIZE_256];
-	PrepareGaussianFilter(gaussianFilter, filter_size, 1.0);
+	std::vector<double> gaussianFilter(filter_size);  // Use std::vector for dynamic array size
+	PrepareGaussianFilter(gaussianFilter.data(), filter_size, 1.0);  // A 1D Gaussian filter is created using the PrepareGaussianFilter function
 
-	// Convert the 1D Gaussian filter into a 2D frequency domain filter
+	// The 1D Gaussian filter is extended to a 2D filter by multiplying the 1D Gaussian values in both the x and y dimensions,
+	// storing the result in floatFilter.
 	for (int i = 0; i < NUMBER_OF_ROWS; i++)
 	{
 		for (int j = 0; j < NUMBER_OF_COLUMNS; j++)
@@ -309,9 +425,11 @@ void Work(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
 
 	// Perform FFT on the Gaussian filter to move it to the frequency domain
 	tFloat floatImFilter[SIZE_256][SIZE_256] = { 0 };
-	ShiftHalfSize(floatFilter);
+	ShiftHalfSize(floatFilter); // Shift before FFT
 	DoFFT(floatFilter, floatImFilter, FORWARD_FFT, NORMALIZE_BY_SQRT);
 	ShiftHalfSize(floatFilter); // Shift back after FFT
+
+	//******* END OF THE NEW PART - GAUSSIAN FILTER CREATION AND FFT ************
 
 	// Step 3: Filtration in the frequency domain
 	DoFiltrationInFD(floatRe, floatIm, floatFilter);
@@ -335,56 +453,67 @@ void Work(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
 }
 
 
+
+
 // Declare Gray Image
 unsigned char ProccesIMG[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
 unsigned char dst[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+
 void main()
 {
-	////// Convolution
-	LoadGrayImageFromTrueColorBmpFile(ProccesIMG, "grayImage11.bmp");
-	DoFiltationByConvolution(ProccesIMG, dst, kernel1);
-	StoreGrayImageAsGrayBmpFile(dst, "A5211-hpf-td_1.bmp");
-
-	LoadGrayImageFromTrueColorBmpFile(ProccesIMG, "grayImage11.bmp");
-	DoFiltationByConvolution(ProccesIMG, dst, kernel2);
-	StoreGrayImageAsGrayBmpFile(dst, "A5211-hpf-td_2.bmp");
-
-	LoadGrayImageFromTrueColorBmpFile(ProccesIMG, "grayImage13.bmp");
-	DoFiltationByConvolution(ProccesIMG, dst, kernel1);
-	StoreGrayImageAsGrayBmpFile(dst, "A5213-hpf-td_1.bmp");
-
-	LoadGrayImageFromTrueColorBmpFile(ProccesIMG, "grayImage13.bmp");
-	DoFiltationByConvolution(ProccesIMG, dst, kernel2);
-	StoreGrayImageAsGrayBmpFile(dst, "A5213-hpf-td_2.bmp");
-
-
 	/// FFT 
-	// Load and process the first image
-	LoadGrayImageFromGrayBmpFile(ProccesIMG, "A5111-lpf-td_gaus.bmp");
+	// Load and process the Tim1.bmp image
+	LoadGrayImageFromGrayBmpFile(ProccesIMG, "Tim1.bmp");
 	Work(ProccesIMG, FILTER_SIZE_1);
-	StoreGrayImageAsGrayBmpFile(ProccesIMG, "A5211-lpf-fd_RESTORED_3.bmp");
+	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Tim1LPFF.bmp");
 
-	// Load and process the second image
-	LoadGrayImageFromGrayBmpFile(ProccesIMG, "A5113-lpf-td_gaus.bmp");
+	// Apply kernel_1
+	DoFiltationByConvolution(ProccesIMG, dst, kernel_1);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim1_HighPass_kernel_1.bmp");
+
+	// Apply kernel_2
+	DoFiltationByConvolution(ProccesIMG, dst, kernel_2);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim1_HighPass_kernel_2.bmp");
+
+	// Apply kernel_3
+	DoFiltationByConvolution(ProccesIMG, dst, kernel_3);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim1_HighPass_kernel_3.bmp");
+
+	// Apply kernel_4
+	DoFiltationByConvolution(ProccesIMG, dst, kernel_4);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim1_HighPass_kernel_4.bmp");
+
+	//// Apply kernel_5
+	//DoFiltationByConvolution(ProccesIMG, dst, kernel_5);
+	//StoreGrayImageAsGrayBmpFile(dst, "Tim1_HighPass_kernel_5.bmp");
+
+	//***** repeat the steps before on Tim2.bmp given image **********
+
+	// Load and process the Tim2.bmp image
+	LoadGrayImageFromGrayBmpFile(ProccesIMG, "Tim2.bmp");
 	Work(ProccesIMG, FILTER_SIZE_1);
-	StoreGrayImageAsGrayBmpFile(ProccesIMG, "A5213-lpf-td_RESTORED_3.bmp");
+	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Tim2LPFF.bmp");
 
-	// Process the third image with a different filter size
-	LoadGrayImageFromGrayBmpFile(ProccesIMG, "A5111-lpf-td_gaus.bmp");
-	Work(ProccesIMG, FILTER_SIZE_2);
-	StoreGrayImageAsGrayBmpFile(ProccesIMG, "A5211-lpf-td_RESTORED_4.bmp");
+	// Apply kernel_1
+	DoFiltationByConvolution(ProccesIMG, dst, kernel_1);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim2_HighPass_kernel_1.bmp");
 
-	// Process the fourth image with a different filter size
-	LoadGrayImageFromGrayBmpFile(ProccesIMG, "A5113-lpf-td_gaus.bmp");
-	Work(ProccesIMG, FILTER_SIZE_2);
-	StoreGrayImageAsGrayBmpFile(ProccesIMG, "A5213-lpf-td_RESTORED_4.bmp");
+	// Apply kernel_2
+	DoFiltationByConvolution(ProccesIMG, dst, kernel_2);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim2_HighPass_kernel_2.bmp");
 
+	// Apply kernel_3
+	DoFiltationByConvolution(ProccesIMG, dst, kernel_3);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim2_HighPass_kernel_3.bmp");
+
+	// Apply kernel_4
+	DoFiltationByConvolution(ProccesIMG, dst, kernel_4);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim2_HighPass_kernel_4.bmp");
+
+	//// Apply kernel_5
+	//DoFiltationByConvolution(ProccesIMG, dst, kernel_5);
+	//StoreGrayImageAsGrayBmpFile(dst, "Tim2_HighPass_kernel_5.bmp");
 
 	cout << "Press any key to exit" << endl;
 	_getch();
 }
-
-
-
-
-
