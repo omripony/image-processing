@@ -1,9 +1,9 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\MP2\\",
+  "WorkspaceRootPath": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\MP2 - part 1\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{B66D5820-3E2B-4419-A8B2-6F6455AFF48D}|ImProc.vcxproj|C:\\Users\\user\\Documents\\GitHub\\image-processing\\MP2\\ImProc.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{B66D5820-3E2B-4419-A8B2-6F6455AFF48D}|ImProc.vcxproj|C:\\Users\\user\\Documents\\GitHub\\image-processing\\MP2 - part 1\\ImProc.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{B66D5820-3E2B-4419-A8B2-6F6455AFF48D}|ImProc.vcxproj|solutionrelative:ImProc.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
@@ -20,11 +20,11 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "ImProc.cpp",
-              "DocumentMoniker": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\MP2\\ImProc.cpp",
+              "DocumentMoniker": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\MP2 - part 1\\ImProc.cpp",
               "RelativeDocumentMoniker": "ImProc.cpp",
-              "ToolTip": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\MP2\\ImProc.cpp",
+              "ToolTip": "C:\\Users\\user\\Documents\\GitHub\\image-processing\\MP2 - part 1\\ImProc.cpp",
               "RelativeToolTip": "ImProc.cpp",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAHEAAAAAAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAEoAAACSAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-08-09T08:39:43.368Z",
               "EditorCaption": ""

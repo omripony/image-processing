@@ -72,7 +72,7 @@ void PrepareGaussianFilter(double filter[], int filter_size, double sigma)
     }
 }
 
-void DoGaussianFiltration(unsigned char* src, double* filter, int filter_size)
+void DoGaussianFiltration(unsigned char* src, double* filter, int filter_size)  //filteration using convolution - x direction and then y direction
 {
     int half_size = (filter_size - 1) / 2;
     double summa;

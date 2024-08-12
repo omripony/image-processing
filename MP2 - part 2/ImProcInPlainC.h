@@ -10,8 +10,8 @@
 #define SIZE_256 256  // for simple FFT tests
 #define SIZE_512 512  // for CT and MRI files
 
-#define NUMBER_OF_ROWS    (CGA_HEIGHT)
-#define NUMBER_OF_COLUMNS (CGA_WIDTH)
+#define NUMBER_OF_ROWS    (SIZE_256)
+#define NUMBER_OF_COLUMNS (SIZE_256)
 
 #define NUMBER_OF_COLORS (3)
 #define B (0)
