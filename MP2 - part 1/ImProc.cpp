@@ -25,10 +25,10 @@ int main()
     const int FILTER_SIZE_5 = 2 * FILTER_HALF_SIZE_5 + 1;
     double filter_5[FILTER_SIZE_5];
 
-    //LoadGrayImageFromTrueColorBmpFile(src, "2603-7596-8509.bmp");  // Load the image
-    //PrepareGaussianFilter(filter_5, FILTER_SIZE_5, 1);   // Create the filter 5x5
-    //DoGaussianFiltration(&src[0][0], filter_5, FILTER_SIZE_5);  // Perform the filtration
-    //StoreGrayImageAsGrayBmpFile(src, "Tim1LPF5c.bmp");  // Save the blurred image with 5x5 filter
+    LoadGrayImageFromTrueColorBmpFile(src, "Tim1.bmp");  // Load the image
+    PrepareGaussianFilter(filter_5, FILTER_SIZE_5, 1);   // Create the filter 5x5
+    DoGaussianFiltration(&src[0][0], filter_5, FILTER_SIZE_5);  // Perform the filtration
+    StoreGrayImageAsGrayBmpFile(src, "Tim1LPF5c.bmp");  // Save the blurred image with 5x5 filter
 
     LoadGrayImageFromGrayBmpFile(src, "Tim2.bmp");  // Load the image
     PrepareGaussianFilter(filter_5, FILTER_SIZE_5, 1);   // Create the filter 5x5
@@ -40,10 +40,10 @@ int main()
     const int FILTER_SIZE_7 = 2 * FILTER_HALF_SIZE_7 + 1;
     double filter_7[FILTER_SIZE_7];
 
-    //LoadGrayImageFromTrueColorBmpFile(src, "2603-7596-8509.bmp");  // Reload the original image
-    //PrepareGaussianFilter(filter_7, FILTER_SIZE_7, 1);
-    //DoGaussianFiltration(&src[0][0], filter_7, FILTER_SIZE_7);  // Perform the filtration
-    //StoreGrayImageAsGrayBmpFile(src, "Tim1LPF7c.bmp");  // Save the blurred image with 7x7 filter
+    LoadGrayImageFromTrueColorBmpFile(src, "Tim1.bmp");  // Reload the original image
+    PrepareGaussianFilter(filter_7, FILTER_SIZE_7, 1);
+    DoGaussianFiltration(&src[0][0], filter_7, FILTER_SIZE_7);  // Perform the filtration
+    StoreGrayImageAsGrayBmpFile(src, "Tim1LPF7c.bmp");  // Save the blurred image with 7x7 filter
 
     LoadGrayImageFromGrayBmpFile(src, "Tim2.bmp");  // Load the image
     PrepareGaussianFilter(filter_7, FILTER_SIZE_7, 1);   // Create the filter 7x7

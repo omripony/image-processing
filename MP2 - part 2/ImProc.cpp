@@ -26,11 +26,12 @@ using namespace std;  // explain someday
 #define FILTER_HALF_SIZE 12
 
 
-unsigned char byteOriginal[SIZE_256][SIZE_256];  //This is an array to store the original image data. SIZE_256 is a constant defined in the header
+unsigned char byteOriginal[VGA_HEIGHT][VGA_WIDTH];  //This is an array to store the original image data. SIZE_256 is a constant defined in the header
 
-tFloat floatRe[SIZE_256][SIZE_256];  //This stores the real part of an image in the frequency domain.
-tFloat floatIm[SIZE_256][SIZE_256];  // This stores the imaginary part of an image in the frequency domain.
-tFloat floatFilter[SIZE_256][SIZE_256];
+tFloat floatRe[VGA_HEIGHT][VGA_WIDTH];  //This stores the real part of an image in the frequency domain.
+tFloat floatIm[VGA_HEIGHT][VGA_WIDTH];  // This stores the imaginary part of an image in the frequency domain.
+tFloat floatFilter[VGA_HEIGHT][VGA_WIDTH];
+unsigned char GrayImage1[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
 
 
 //These are 2 filter kernels used for convolution operations. The values inside these matrices represent the filter coefficients.
@@ -62,6 +63,7 @@ double kernel_3[2 * FILTER_HALF_HEIGHT + 1][2 * FILTER_HALF_HEIGHT + 1] = {
 	{-1,  2,  2,  2, -1},
 	{-1, -1, -1, -1, -1}
 };
+
 
 double kernel_4[2 * FILTER_HALF_HEIGHT + 1][2 * FILTER_HALF_HEIGHT + 1] =
 {
@@ -262,6 +264,24 @@ void PrepareGaussianFilter(double filter[], int filter_size, double sigma)
 }
 
 
+void CreateGreyGaussian(unsigned char image[][NUMBER_OF_COLUMNS], double SigmaX, double SigmaY) {
+	int midy = NUMBER_OF_ROWS / 2;
+	int midx = NUMBER_OF_COLUMNS / 2;
+
+	for (int row = 0; row < NUMBER_OF_ROWS; row++)
+		for (int column = 0; column < NUMBER_OF_COLUMNS; column++) {
+			double xa = column - midx;
+			xa /= SigmaX;
+			double ya = row - midy;
+			ya /= SigmaY;
+
+			double answer = 255.0 * (exp(-xa * xa - ya * ya));
+
+			image[row][column] = (unsigned char)(unsigned)(answer);
+		}
+}
+
+
 //version 1 of work() function - include a simple rectangle HPF/LPF already in FD:
 //void Work(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS],int filter_size)
 //{
@@ -404,32 +424,25 @@ void Work(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
 	ShiftHalfSize(floatIm);
 
 	DoFFT(floatRe, floatIm, FORWARD_FFT, NORMALIZE_BY_SQRT);  // performs the Fast Fourier Transform on the image, converting it
-	// from the spatial domain to the frequency domain. This transformation separates
-	// the image into its frequency components, stored in floatRe (real part) and 
-	// floatIm (imaginary part).
+															 // from the spatial domain to the frequency domain. This transformation separates
+															// the image into its frequency components, stored in floatRe (real part) and 
+														   // floatIm (imaginary part).
 
 	//****** THIS PART IS THE CHANGE FROM THE GIVEN CODE BY SAMUEL - FOR GAUSSIAN FILTER (RATHER THAN RECTANGLE LPF) - ******* HAS TO BE CHECKED!
 	// Step 2: Prepare the Gaussian filter
-	std::vector<double> gaussianFilter(filter_size);  // Use std::vector for dynamic array size
-	PrepareGaussianFilter(gaussianFilter.data(), filter_size, 1.0);  // A 1D Gaussian filter is created using the PrepareGaussianFilter function
+	
 
-	// The 1D Gaussian filter is extended to a 2D filter by multiplying the 1D Gaussian values in both the x and y dimensions,
-	// storing the result in floatFilter.
-	for (int i = 0; i < NUMBER_OF_ROWS; i++)
-	{
-		for (int j = 0; j < NUMBER_OF_COLUMNS; j++)
-		{
-			floatFilter[i][j] = gaussianFilter[i % filter_size] * gaussianFilter[j % filter_size];
-		}
-	}
+	CreateGreyGaussian(GrayImage1, 20, 30);
+	StoreGrayImageAsGrayBmpFile(GrayImage1, "GreyGaussianfilter.bmp");
 
-	// Perform FFT on the Gaussian filter to move it to the frequency domain
-	tFloat floatImFilter[SIZE_256][SIZE_256] = { 0 };
-	ShiftHalfSize(floatFilter); // Shift before FFT
-	DoFFT(floatFilter, floatImFilter, FORWARD_FFT, NORMALIZE_BY_SQRT);
-	ShiftHalfSize(floatFilter); // Shift back after FFT
 
-	//******* END OF THE NEW PART - GAUSSIAN FILTER CREATION AND FFT ************
+	//// Perform FFT on the Gaussian filter to move it to the frequency domain --------> assume that the gaussian filter is already in FD 
+	//tFloat floatImFilter[SIZE_256][SIZE_256] = { 0 };
+	//ShiftHalfSize(floatFilter); // Shift before FFT
+	//DoFFT(floatFilter, floatImFilter, FORWARD_FFT, NORMALIZE_BY_SQRT);
+	//ShiftHalfSize(floatFilter); // Shift back after FFT
+
+	//******* END OF THE NEW PART - GAUSSIAN FILTER CREATION AND FFT **************************
 
 	// Step 3: Filtration in the frequency domain
 	DoFiltrationInFD(floatRe, floatIm, floatFilter);
@@ -463,7 +476,7 @@ void main()
 {
 	/// FFT 
 	// Load and process the Tim1.bmp image
-	LoadGrayImageFromGrayBmpFile(ProccesIMG, "Tim1.bmp");
+	LoadGrayImageFromTrueColorBmpFile(ProccesIMG, "Tim1.bmp");
 	Work(ProccesIMG, FILTER_SIZE_1);
 	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Tim1LPFF.bmp");
 
