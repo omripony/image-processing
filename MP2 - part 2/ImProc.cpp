@@ -78,20 +78,15 @@ double sharpening[2 * FILTER_HALF_HEIGHT + 1][2 * FILTER_HALF_HEIGHT + 1] = {
 unsigned char temp_dest[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
 
 
-//performs a convolution of the source image with a filter. It initializes the destination image to zero,
-// then applies the filter to each pixel, and normalizes the result.
-void DoFiltationByConvolution(unsigned char src[][NUMBER_OF_COLUMNS], unsigned char dest[][NUMBER_OF_COLUMNS],double filter[][2 * FILTER_HALF_WIDTH + 1])
+//DoFiltationByConvolution is a given function by samuel - page 5 in filtration by convolution lecture
+void DoFiltationByConvolution(unsigned char src[][NUMBER_OF_COLUMNS], unsigned char dest[][NUMBER_OF_COLUMNS],
+															double filter[][2 * FILTER_HALF_WIDTH + 1])
 {
 	unsigned char* ptrToPixels = dest[0];
 	for (int i = 0; i < NUMBER_OF_ROWS * NUMBER_OF_COLUMNS; i++) { *ptrToPixels++ = 0; }
-	for (int row = FILTER_HALF_HEIGHT;
-		row < NUMBER_OF_ROWS - FILTER_HALF_HEIGHT;
-
-		row++)
-
+	for (int row = FILTER_HALF_HEIGHT; row < NUMBER_OF_ROWS - FILTER_HALF_HEIGHT; row++)
 	{
-		for (int column = FILTER_HALF_WIDTH;
-			column < NUMBER_OF_COLUMNS - FILTER_HALF_WIDTH; column++)
+		for (int column = FILTER_HALF_WIDTH; column < NUMBER_OF_COLUMNS - FILTER_HALF_WIDTH; column++)
 		{
 			double summa = 0;
 			for (int y = -FILTER_HALF_HEIGHT; y <= FILTER_HALF_HEIGHT; y++)
@@ -103,6 +98,7 @@ void DoFiltationByConvolution(unsigned char src[][NUMBER_OF_COLUMNS], unsigned c
 
 				} // of x
 			} // of y
+
 			summa /= 25.0;
 			if (summa < 0) summa = 0;
 			if (summa > 255) summa = 255;
@@ -291,6 +287,44 @@ void CreateHFEF(tFloat HFEF[][NUMBER_OF_COLUMNS], double alpha)
 	}
 }
 
+
+void DoGaussianFiltration(unsigned char* src, double* filter, int filter_size) //filteration using convolution - x direction and then y direction
+{
+	int half_size = (filter_size - 1) / 2;
+	double summa;
+
+	memset(temp_dest, 0, sizeof(temp_dest));  
+
+// x direction
+	for (int row = 0; row < NUMBER_OF_ROWS; row++) {
+		for (int column = half_size; column < NUMBER_OF_COLUMNS - half_size; column++) {
+			summa = 0;
+			for (int x = -half_size; x <= half_size; x++) {
+				summa += filter[half_size + x] * (double)*(src + row * NUMBER_OF_COLUMNS + (column + x));
+			}
+			if (summa < 0) summa = 0;
+			if (summa > 255) summa = 255;
+			*(temp_dest[0] + row * NUMBER_OF_COLUMNS + column) = (unsigned char)summa;
+		}
+	}
+
+	// Clear Source !!!
+	for (int i = 0; i < NUMBER_OF_ROWS * NUMBER_OF_COLUMNS; i++) {
+		src[i] = 0;
+	}
+
+	// y direction
+	for (int row = half_size; row < NUMBER_OF_ROWS - half_size; row++) {
+		for (int column = 0; column < NUMBER_OF_COLUMNS; column++) {
+			summa = 0;
+			for (int y = -half_size; y <= half_size; y++) {
+				summa += filter[half_size + y] * *(temp_dest[0] + (row + y) * NUMBER_OF_COLUMNS + column);}			
+			if (summa < 0) summa = 0;
+			if (summa > 255) summa = 255;
+			*(src + row * NUMBER_OF_COLUMNS + column) = (unsigned char)summa;
+		}
+	}
+}
 
 //version 1 of work() function - include a simple rectangle HPF/LPF already in FD:
 //void Work(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS],int filter_size)
@@ -623,9 +657,46 @@ void WorkHPEF(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
 // Declare Gray Image
 unsigned char ProccesIMG[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
 unsigned char dst[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+unsigned char src[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
 
 void main()
 {
+
+	//part 1 of the task - "By using reworked 2D 5x5 and 7x7 filters BLUR Image Tim1.bmp by using convolution with Fast Gaussian 1D Filters"
+	cout << "Gaussian Filter" << endl;
+
+	// Apply a 5x5 Gaussian filter
+	const int FILTER_HALF_SIZE_5 = 2;
+	const int FILTER_SIZE_5 = 2 * FILTER_HALF_SIZE_5 + 1;
+	double filter_5[FILTER_SIZE_5];
+
+	LoadGrayImageFromTrueColorBmpFile(src, "Tim1.bmp");  // Load the image
+	PrepareGaussianFilter(filter_5, FILTER_SIZE_5, 1);   // Create the filter 5x5
+	DoGaussianFiltration(&src[0][0], filter_5, FILTER_SIZE_5);  // Perform the filtration
+	StoreGrayImageAsGrayBmpFile(src, "Tim1LPF5c.bmp");  // Save the blurred image with 5x5 filter
+
+	LoadGrayImageFromGrayBmpFile(src, "Tim2.bmp");  // Load the image
+	PrepareGaussianFilter(filter_5, FILTER_SIZE_5, 1);   // Create the filter 5x5
+	DoGaussianFiltration(&src[0][0], filter_5, FILTER_SIZE_5);  // Perform the filtration
+	StoreGrayImageAsGrayBmpFile(src, "Tim2LPF5c.bmp");  // Save the blurred image with 5x5 filter
+
+	// Apply a 7x7 Gaussian filter
+	const int FILTER_HALF_SIZE_7 = 3;
+	const int FILTER_SIZE_7 = 2 * FILTER_HALF_SIZE_7 + 1;
+	double filter_7[FILTER_SIZE_7];
+
+	LoadGrayImageFromTrueColorBmpFile(src, "Tim1.bmp");  // Reload the original image
+	PrepareGaussianFilter(filter_7, FILTER_SIZE_7, 1);
+	DoGaussianFiltration(&src[0][0], filter_7, FILTER_SIZE_7);  // Perform the filtration
+	StoreGrayImageAsGrayBmpFile(src, "Tim1LPF7c.bmp");  // Save the blurred image with 7x7 filter
+
+	LoadGrayImageFromGrayBmpFile(src, "Tim2.bmp");  // Load the image
+	PrepareGaussianFilter(filter_7, FILTER_SIZE_7, 1);   // Create the filter 7x7
+	DoGaussianFiltration(&src[0][0], filter_7, FILTER_SIZE_7);  // Perform the filtration
+	StoreGrayImageAsGrayBmpFile(src, "Tim2LPF7c.bmp");  // Save the blurred image with 7x7 filter
+
+	//********* part 2 of the task - "Blur test Image by using FFT and “restore it” *************
+
 	// Load and process the Tim1.bmp image
 	LoadGrayImageFromTrueColorBmpFile(ProccesIMG, "Tim1.bmp");
 	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Tim1_gray.bmp");  //**for debugging
@@ -655,7 +726,7 @@ void main()
 	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Tim1HPEF.bmp");
 	
 
-	//**************************************************************8
+	//**************************************************************
 	//***** repeat the steps before on Tim2.bmp given image **********
 
 	// Load and process the Tim2.bmp image
