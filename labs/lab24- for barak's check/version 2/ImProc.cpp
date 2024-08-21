@@ -1,15 +1,15 @@
-#include <stdio.h> 
+﻿#include <stdio.h> 
 #include <conio.h> 
 #include <stdlib.h>
 #include <time.h>
 #include <iostream> 
 #include <fstream>  
 #include <vector>   // For storing the centers of Gaussians
+#include <math.h>   // For math functions like sqrt and exp
 
 using namespace std;
 
 #define _USE_MATH_DEFINES
-#include <math.h>
 #include "ImProcInPlainC.h"
 
 #define myMAXCOLORS 256
@@ -33,6 +33,79 @@ struct ROI
 };
 
 
+int CalculateOtsuThreshold(unsigned char GrayImage[][NUMBER_OF_COLUMNS])
+{
+    int histogram[256] = { 0 };
+    int total_pixels = NUMBER_OF_ROWS * NUMBER_OF_COLUMNS;
+
+    // Step 1: Create a histogram of pixel intensities
+    for (int row = 0; row < NUMBER_OF_ROWS; row++)
+    {
+        for (int col = 0; col < NUMBER_OF_COLUMNS; col++)
+        {
+            histogram[GrayImage[row][col]]++;
+        }
+    }
+
+    // Step 2: Calculate the global sum of intensity values (used for class means)
+    float global_sum = 0;
+    for (int t = 0; t < 256; t++)
+        global_sum += t * histogram[t];
+
+    float sum_background = 0; // Cumulative sum of intensities for the background class 
+    int weight_background = 0; // Weight (probability) of the background class 
+    int weight_foreground = 0; // Weight (probability) of the foreground class 
+
+    float max_variance = 0; // Maximum between-class variance found
+    int optimal_threshold = 0; // Threshold corresponding to the maximum variance
+
+    for (int t = 0; t < 256; t++)
+    {
+        weight_background += histogram[t];  
+        if (weight_background == 0)
+            continue;  
+
+        weight_foreground = total_pixels - weight_background;  
+        if (weight_foreground == 0)
+            break;  
+
+        sum_background += (float)(t * histogram[t]);  
+
+        float mean_background = sum_background / weight_background; 
+        float mean_foreground = (global_sum - sum_background) / weight_foreground;  
+
+        // Calculate between-class variance (σ_B^2)
+        float variance_between = (float)weight_background * (float)weight_foreground * 
+                (mean_background - mean_foreground) *(mean_background - mean_foreground);
+
+        // Update the maximum variance and the optimal threshold
+        if (variance_between > max_variance)
+        {
+            max_variance = variance_between;
+            optimal_threshold = t;
+        }
+    }
+
+    return optimal_threshold;
+}
+
+
+
+void InitThresholdLUT(unsigned char* LUT, unsigned char Threshold, int B_Or_W)
+{
+    for (int i = 0; i < myMAXCOLORS; i++)
+        LUT[i] = (255 - B_Or_W * 255) * (i > Threshold) + 255 * (i <= Threshold && B_Or_W);
+}
+
+
+void ImposeLUT(unsigned char GrayImage[][NUMBER_OF_COLUMNS], unsigned char* LUT)
+{
+    unsigned char* ptrToPixels = GrayImage[0];
+    for (int pixel = 0; pixel < NUMBER_OF_ROWS * NUMBER_OF_COLUMNS; pixel++)
+        *ptrToPixels++ = LUT[*ptrToPixels];
+}
+
+
 void DrawGaussian(unsigned char img[][NUMBER_OF_COLUMNS], int centerX, int centerY, float sigmaX, float sigmaY)
 {
     double a, b, c;
@@ -51,21 +124,7 @@ void DrawGaussian(unsigned char img[][NUMBER_OF_COLUMNS], int centerX, int cente
 }
 
 
-void InitThresholdLUT(unsigned char* LUT, unsigned char Threshold, int B_Or_W)
-{
-    for (int i = 0; i < myMAXCOLORS; i++)
-        LUT[i] = (255 - B_Or_W * 255) * (i > Threshold) + 255 * (i <= Threshold && B_Or_W);
-}
-
-
-void ImposeLUT(unsigned char GrayImage[][NUMBER_OF_COLUMNS], unsigned char* LUT)
-{
-    unsigned char* ptrToPixels = GrayImage[0];
-    for (int pixel = 0; pixel < NUMBER_OF_ROWS * NUMBER_OF_COLUMNS; pixel++)
-        *ptrToPixels++ = LUT[*ptrToPixels];
-}
-
-int ContElemInPicture(unsigned char GrayImage[][NUMBER_OF_COLUMNS], ROI MyROI)
+int CountElementsInROI(unsigned char GrayImage[][NUMBER_OF_COLUMNS], ROI MyROI)
 {
     int CountElem = 0;
     unsigned char* PtrToPixel;
@@ -76,18 +135,21 @@ int ContElemInPicture(unsigned char GrayImage[][NUMBER_OF_COLUMNS], ROI MyROI)
         PtrToPixel = GrayImage[0] + row * NUMBER_OF_COLUMNS + MyROI.left;
         for (int col = MyROI.left; col < MyROI.right; col++)
         {
-            if (*PtrToPixel < 127)
+            if (*PtrToPixel < 127)  // Thresholding to identify blackish objects
             {
                 CountElem++;
-                *PtrToPixel = 50;
+                *PtrToPixel = 50;    // Mark visited areas
             }
             else
-                *PtrToPixel = 200;
+            {
+                *PtrToPixel = 200;   // Mark non-object areas
+            }
             PtrToPixel += 1;
         }
     }
     return CountElem;
 }
+
 
 /* Function to calculate distance between two points */
 double CalculateDistance(int x1, int y1, int x2, int y2)
@@ -95,32 +157,118 @@ double CalculateDistance(int x1, int y1, int x2, int y2)
     return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
+
+// Function to measure the size of the largest element (width and height)
+void mesure_elmetns_size(unsigned char* img, int threshold, int* max_X, int* max_Y)
+{
+    int currentWidth = 0;
+    int currentHeight = 0;
+
+    *max_X = 0;  // Reset max_X to 0
+    *max_Y = 0;  // Reset max_Y to 0
+
+    for (int row = 0; row < NUMBER_OF_ROWS; row++)
+    {
+        for (int col = 0; col < NUMBER_OF_COLUMNS; col++)
+        {
+            if (*(img + row * NUMBER_OF_COLUMNS + col) < threshold)  // If pixel is part of an element
+            {
+                // Measure width (size in X direction)
+                currentWidth = 0;
+                for (int i = col; i < NUMBER_OF_COLUMNS && *(img + row * NUMBER_OF_COLUMNS + i) < threshold; i++)
+                {
+                    currentWidth++;
+                }
+
+                // Measure height (size in Y direction)
+                currentHeight = 0;
+                for (int i = row; i < NUMBER_OF_ROWS && *(img + i * NUMBER_OF_COLUMNS + col) < threshold; i++)
+                {
+                    currentHeight++;
+                }
+
+                // Update max_X and max_Y if we found a larger element
+                if (currentWidth > *max_X)
+                    *max_X = currentWidth;
+
+                if (currentHeight > *max_Y)
+                    *max_Y = currentHeight;
+            }
+        }
+    }
+}
+
+
+int FloodFill(unsigned char GrayImage[][NUMBER_OF_COLUMNS], int row, int col)
+{
+    if (row < 0 || row >= NUMBER_OF_ROWS || col < 0 || col >= NUMBER_OF_COLUMNS)
+        return 0;  // Out of bounds
+
+    if (GrayImage[row][col] != 0)  // If it's not an unprocessed element, stop
+        return 0;
+
+    // Mark the current pixel as visited
+    GrayImage[row][col] = 100;
+
+    // Recursively flood fill in all 4 directions and count the pixels
+    int size = 1;
+    size += FloodFill(GrayImage, row + 1, col);
+    size += FloodFill(GrayImage, row - 1, col);
+    size += FloodFill(GrayImage, row, col + 1);
+    size += FloodFill(GrayImage, row, col - 1);
+
+    return size;  // Return the size of the connected component
+}
+
+
+bool IsElementInROI_bool(unsigned char GrayImage[][NUMBER_OF_COLUMNS], ROI MyROI, int& element_size)
+{
+    MyROI.ClipToBounds(NUMBER_OF_ROWS, NUMBER_OF_COLUMNS);
+    bool found_flag = false;
+
+    for (int row = MyROI.top; row < MyROI.bottom; row++)
+    {
+        for (int col = MyROI.left; col < MyROI.right; col++)
+        {
+            if (GrayImage[row][col] == 0)  // If we find an unvisited element
+            {
+                element_size = FloodFill(GrayImage, row, col);  // Get the size of the element
+                found_flag = true;
+                return found_flag;
+            }
+        }
+    }
+    return found_flag;
+}
+
+// Declare your global variables for image storage
 unsigned char ProccesIMG[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
 unsigned char gaussian[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
 unsigned char LUT[256];
 
+
 void main()
 {
     ROI MyROI;
-    int X, Y, BPixelCountElem = 0, BPixelCount = 0;
+    int BPixelCountElem = 0, BPixelCount = 0;
     time_t t;
 
-    vector<pair<int, int>> centers;  // To store the centers of Gaussians
-    const int minDistance = 30; // Ensure sufficient distance between Gaussians
-    const int margin = 30; // Margin from the borders
+    vector<pair<int, int>> centers;  // For storing Gaussian centers
+    const int minDistance = 30;      // Minimum distance between Gaussian centers
+    const int margin = 30;           // Margin from the edges
 
     srand((unsigned)time(&t));
 
-    // Set background to black
+    // Part 1: Process Gaussians (untouched)
     for (int row = 0; row < NUMBER_OF_ROWS; row++)
         for (int col = 0; col < NUMBER_OF_COLUMNS; col++)
             ProccesIMG[row][col] = 0;
 
-    // Draw Gaussians ensuring no overlap and no clipping at edges
     for (int i = 0; i < 6; i++)
     {
         bool validPosition = false;
         int retries = 0;
+        int X, Y;
 
         while (!validPosition && retries < 100)
         {
@@ -128,7 +276,6 @@ void main()
             Y = margin + rand() % (NUMBER_OF_ROWS - 2 * margin);
             validPosition = true;
 
-            // Check distance to all previously placed Gaussians
             for (const auto& center : centers)
             {
                 if (CalculateDistance(X, Y, center.first, center.second) < minDistance)
@@ -137,7 +284,6 @@ void main()
                     break;
                 }
             }
-
             retries++;
         }
 
@@ -146,7 +292,6 @@ void main()
     }
 
     StoreGrayImageAsGrayBmpFile(ProccesIMG, "Image241.bmp");
-
     // Set background to black for the gaussian image
     for (int row = 0; row < NUMBER_OF_ROWS; row++)
         for (int col = 0; col < NUMBER_OF_COLUMNS; col++)
@@ -160,35 +305,57 @@ void main()
     MyROI.bottom = NUMBER_OF_ROWS;
     MyROI.left = 0;
     MyROI.right = NUMBER_OF_COLUMNS;
-    BPixelCountElem = ContElemInPicture(gaussian, MyROI);
+    BPixelCountElem = CountElementsInROI(gaussian, MyROI);
 
     ImposeLUT(ProccesIMG, LUT);
-    BPixelCount = ContElemInPicture(ProccesIMG, MyROI);
+    BPixelCount = CountElementsInROI(ProccesIMG, MyROI);
     cout << "Found " << int(BPixelCount / BPixelCountElem + 0.5) << " gaussians" << endl;
 
-    //******* part 2 of the program - counting objects in a given image **********
 
+    // Part 2: Counting objects (tomatoes) in the given image
     LoadGrayImageFromTrueColorBmpFile(ProccesIMG, "Image242_color.bmp");
-    //StoreGrayImageAsGrayBmpFile(ProccesIMG, "Image242_gray.bmp");    //just for debuging - finding the perfect threshold
 
-    InitThresholdLUT(LUT, 214, 0);
+    // Automatically calculate the threshold using Otsu's method
+    int threshold = CalculateOtsuThreshold(ProccesIMG);
+    cout << "Calculated Threshold: " << threshold << endl;
+
+    InitThresholdLUT(LUT, threshold, 0);  // Apply the calculated threshold
     ImposeLUT(ProccesIMG, LUT);
     StoreGrayImageAsGrayBmpFile(ProccesIMG, "Image242.bmp");
 
-    MyROI.top = 185;
-    MyROI.bottom = 270;
-    MyROI.left = 95;
-    MyROI.right = 145;
-    BPixelCountElem = ContElemInPicture(ProccesIMG, MyROI);
-
+    // Define ROI for element analysis and count the elements
+    int counter_elements = 0;
+    int element_size = 0;
+    const int size_threshold = 100;  // Minimum size of an element to be considered valid (adjust as needed)
     MyROI.top = 0;
-    MyROI.bottom = NUMBER_OF_ROWS;
     MyROI.left = 0;
-    MyROI.right = NUMBER_OF_COLUMNS;
-    BPixelCount = ContElemInPicture(ProccesIMG, MyROI);
 
-   /// StoreGrayImageAsGrayBmpFile(ProccesIMG, "Image242.bmp");
-    cout << "Found " << int(BPixelCount / BPixelCountElem ) << " elements" << endl;
+    // Process the image row by row, skipping previously marked areas
+    for (int row = 0; row < NUMBER_OF_ROWS; row++)
+    {
+        for (int col = 0; col < NUMBER_OF_COLUMNS; col++)
+        {
+            MyROI.top = row;
+            MyROI.bottom = row + 1;
+            MyROI.left = col;
+            MyROI.right = col + 1;
+
+            // Check if this pixel belongs to a new element
+            if (ProccesIMG[row][col] == 0)  // Detect unprocessed element
+            {
+                if (IsElementInROI_bool(ProccesIMG, MyROI, element_size))
+                {
+                    // Only count the element if its size is greater than the threshold
+                    if (element_size > size_threshold)
+                    {
+                        counter_elements++;
+                    }
+                }
+            }
+        }
+    }
+
+    cout << "Found " << counter_elements << " elements (tomatoes)" << endl;
 
     WaitForUserPressKey();
 }
