@@ -16,15 +16,15 @@ using namespace std;  // explain someday
 #include "ImProcInPlainC.h" // needed for those who wants to program in Plain C
 #include "PrimeFFTn.h"      // for basic FFT operations
 
-#define FILTER_SIZE_1 6
+#define FILTER_SIZE_1 20
 #define FILTER_SIZE_2 2
+#define FILTER_SIZE_3 1
 
 #define myMAXCOLORS 256
 
 #define FILTER_HALF_WIDTH 2
 #define FILTER_HALF_HEIGHT 2
 #define FILTER_HALF_SIZE 12
-
 
 unsigned char byteOriginal[VGA_HEIGHT][VGA_WIDTH];  //This is an array to store the original image data. SIZE_256 is a constant defined in the header
 
@@ -37,7 +37,7 @@ unsigned char GrayImage1[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
 //These are 2 filter kernels used for convolution operations. The values inside these matrices represent the filter coefficients.
 //these kernels are 5x5 HPF kernels - can be found in the web
 
-double kernel_2[2 * FILTER_HALF_HEIGHT +1][2 * FILTER_HALF_HEIGHT + 1] = 
+double kernel_1[2 * FILTER_HALF_HEIGHT +1][2 * FILTER_HALF_HEIGHT + 1] = 
 {
 	{-1, -3, -4, -3, -1},
 	{-3,  0,  6,  0, -3},
@@ -47,7 +47,7 @@ double kernel_2[2 * FILTER_HALF_HEIGHT +1][2 * FILTER_HALF_HEIGHT + 1] =
 };
 
 
-double kernel_3[2 * FILTER_HALF_HEIGHT + 1][2 * FILTER_HALF_HEIGHT + 1] = {
+double kernel_2[2 * FILTER_HALF_HEIGHT + 1][2 * FILTER_HALF_HEIGHT + 1] = {
 	{-1, -1, -1, -1, -1},
 	{-1,  2,  2,  2, -1},
 	{-1,  2,  8,  2, -1},
@@ -56,7 +56,7 @@ double kernel_3[2 * FILTER_HALF_HEIGHT + 1][2 * FILTER_HALF_HEIGHT + 1] = {
 };
 
 
-double kernel_4[2 * FILTER_HALF_HEIGHT + 1][2 * FILTER_HALF_HEIGHT + 1] =
+double kernel_3[2 * FILTER_HALF_HEIGHT + 1][2 * FILTER_HALF_HEIGHT + 1] =
 {
 	{-1, -1, -1, -1, -1},
 	{-1,  1,  1,  1, -1},
@@ -66,7 +66,7 @@ double kernel_4[2 * FILTER_HALF_HEIGHT + 1][2 * FILTER_HALF_HEIGHT + 1] =
 };
 
 
-double sharpening[2 * FILTER_HALF_HEIGHT + 1][2 * FILTER_HALF_HEIGHT + 1] = {
+double kernel_4[2 * FILTER_HALF_HEIGHT + 1][2 * FILTER_HALF_HEIGHT + 1] = {
 	{ 0, -1, -1, -1,  0},
 	{-1,  2,  2,  2, -1},
 	{-1,  2,  8,  2, -1},
@@ -326,6 +326,31 @@ void DoGaussianFiltration(unsigned char* src, double* filter, int filter_size) /
 	}
 }
 
+
+void CreateHighPassFilter(tFloat floatFilter[][NUMBER_OF_COLUMNS], int cutoff, int order)
+{
+	int centerX = NUMBER_OF_COLUMNS / 2;
+	int centerY = NUMBER_OF_ROWS / 2;
+
+	for (int row = 0; row < NUMBER_OF_ROWS; row++)
+	{
+		for (int col = 0; col < NUMBER_OF_COLUMNS; col++)
+		{
+			double distance = sqrt(pow(row - centerY, 2) + pow(col - centerX, 2));
+			floatFilter[row][col] = 1.0 / (1.0 + pow((double)cutoff / (distance + 1e-10), 2 * order));
+		}
+	}
+
+	// Invert the filter values to correctly visualize the HPF
+	for (int row = 0; row < NUMBER_OF_ROWS; row++)
+	{
+		for (int col = 0; col < NUMBER_OF_COLUMNS; col++)
+		{
+			floatFilter[row][col] = 1.0 - floatFilter[row][col];
+		}
+	}
+}
+
 //version 1 of work() function - include a simple rectangle HPF/LPF already in FD:
 //void Work(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS],int filter_size)
 //{
@@ -549,7 +574,7 @@ void Work(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
 	StoreGrayImageAsGrayBmpFile(byteOriginal, "Tim1_FFT_Before_Filtering.bmp");
 
 	// Step 4: Prepare the Gaussian filter
-	CreateGreyGaussian(GrayImage1, 50, 50);
+	CreateGreyGaussian(GrayImage1, 10, 10);
 	StoreGrayImageAsGrayBmpFile(GrayImage1, "GreyGaussianFilter.bmp");
 
 	// Convert the GrayImage1 to floatFilter (as it's likely in 8-bit unsigned char format) -- very important!!
@@ -588,7 +613,71 @@ void Work(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
 }
 
 
-void WorkHPEF(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
+void WorkHPEF1(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
+{
+	cout << "FFT Filtration in nearly Plain C" << endl;
+
+	// Step 1: Input image processing - FFT in preparation for the filtration process
+	for (int i = 0; i < NUMBER_OF_ROWS; i++)
+	{
+		for (int j = 0; j < NUMBER_OF_COLUMNS; j++)
+		{
+			floatRe[i][j] = ProccesIMG[i][j];
+			floatIm[i][j] = 0;  // Ensure imaginary part is initialized to 0
+		}
+	}
+
+	Convert(floatRe, byteOriginal, 0, 255);
+	StoreGrayImageAsGrayBmpFile(byteOriginal, "Tim2_Initial.bmp");
+
+	// Step 2: Apply FFT preprocessing (centering)
+	ShiftHalfSize(floatRe);
+	ShiftHalfSize(floatIm);
+
+	Convert(floatRe, byteOriginal, 0, 255);
+	StoreGrayImageAsGrayBmpFile(byteOriginal, "Tim2_After_Shift.bmp");
+
+	// Step 3: Perform FFT to convert the image to the frequency domain
+	DoFFT(floatRe, floatIm, FORWARD_FFT, NORMALIZE_BY_SQRT);
+
+	Convert(floatRe, byteOriginal, 0, 50);
+	StoreGrayImageAsGrayBmpFile(byteOriginal, "Tim2_FFT_Before_Filtering.bmp");
+
+	// Step 4: Create the High Frequency Enhancing Filter (HFEF)
+	int cutoff = 80; // Use the best cutoff frequency from the last row
+	int order = 8;   // Use the best order from the last row
+	CreateHighPassFilter(floatFilter, cutoff, order);
+	OptimalConvert(floatFilter, byteOriginal);
+	StoreGrayImageAsGrayBmpFile(byteOriginal, "Filter.bmp");
+
+	// Step 5: Apply the HFEF in the frequency domain
+	DoFiltrationInFD(floatRe, floatIm, floatFilter);
+
+	// Debug: Save the filtered frequency domain image before inverse FFT
+	Convert(floatRe, byteOriginal, 0, 50);
+	StoreGrayImageAsGrayBmpFile(byteOriginal, "Filtered_Image_in_FD_before_IFFT.bmp");
+
+	// Step 6: Perform inverse FFT to return to the spatial domain
+	DoFFT(floatRe, floatIm, REVERSE_FFT, NORMALIZE_BY_SQRT);
+	ShiftHalfSize(floatRe);
+	ShiftHalfSize(floatIm);
+
+	// Debug: Save the final result after inverse FFT and shifting
+	OptimalConvert(floatRe, byteOriginal);
+	StoreGrayImageAsGrayBmpFile(byteOriginal, "Tim2_Final_Result_With_HFEF.bmp");
+
+	// Step 7: Copy the result back to ProccesIMG
+	for (int i = 0; i < NUMBER_OF_ROWS; i++)
+	{
+		for (int j = 0; j < NUMBER_OF_COLUMNS; j++)
+		{
+			ProccesIMG[i][j] = byteOriginal[i][j];
+		}
+	}
+}
+
+
+void WorkHPEF2(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
 {
 	cout << "FFT Filtration in nearly Plain C" << endl;
 
@@ -619,7 +708,7 @@ void WorkHPEF(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
 	StoreGrayImageAsGrayBmpFile(byteOriginal, "Tim1_FFT_Before_Filtering.bmp");
 
 	// Step 4: Create the High Frequency Enhancing Filter (HFEF)
-	CreateHFEF(floatFilter, 0.001);  // Adjust the alpha value to control the strength of enhancement
+	CreateHFEF(floatFilter, 1);  // Adjust the alpha value to control the strength of enhancement
 
 	// Debug: Save the HFEF for inspection
 	Convert(floatFilter, byteOriginal, 0, 255);
@@ -652,109 +741,143 @@ void WorkHPEF(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
 }
 
 
-
-
 // Declare Gray Image
-unsigned char ProccesIMG[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+unsigned char ProccesIMG1[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+unsigned char ProccesIMG2[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
 unsigned char dst[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
-unsigned char src[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
-
+unsigned char src1[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+unsigned char src2[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+unsigned char src3[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+unsigned char src4[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
 void main()
 {
 
 	//part 1 of the task - "By using reworked 2D 5x5 and 7x7 filters BLUR Image Tim1.bmp by using convolution with Fast Gaussian 1D Filters"
 	cout << "Gaussian Filter" << endl;
 
+	//***** option 1 for part 1 - using the PrepareGaussianFilter function ******
 	// Apply a 5x5 Gaussian filter
 	const int FILTER_HALF_SIZE_5 = 2;
+	double offset = 0.24;
 	const int FILTER_SIZE_5 = 2 * FILTER_HALF_SIZE_5 + 1;
-	double filter_5[FILTER_SIZE_5];
+	double filter_5[FILTER_SIZE_5] = { 7/273+ offset, 26/273 + offset, 41/273 + offset, 26/273 + offset, 7/273 + offset };  // Use the provided filter
 
-	LoadGrayImageFromTrueColorBmpFile(src, "Tim1.bmp");  // Load the image
-	PrepareGaussianFilter(filter_5, FILTER_SIZE_5, 1);   // Create the filter 5x5
-	DoGaussianFiltration(&src[0][0], filter_5, FILTER_SIZE_5);  // Perform the filtration
-	StoreGrayImageAsGrayBmpFile(src, "Tim1LPF5c.bmp");  // Save the blurred image with 5x5 filter
+	LoadGrayImageFromTrueColorBmpFile(src1, "Tim1.bmp");  // Load the image
+	DoGaussianFiltration(&src1[0][0], filter_5, FILTER_SIZE_5);  // Perform the filtration
+	StoreGrayImageAsGrayBmpFile(src1, "Tim1LPF5c.bmp");  // Save the blurred image with 5x5 filter
 
-	LoadGrayImageFromGrayBmpFile(src, "Tim2.bmp");  // Load the image
-	PrepareGaussianFilter(filter_5, FILTER_SIZE_5, 1);   // Create the filter 5x5
-	DoGaussianFiltration(&src[0][0], filter_5, FILTER_SIZE_5);  // Perform the filtration
-	StoreGrayImageAsGrayBmpFile(src, "Tim2LPF5c.bmp");  // Save the blurred image with 5x5 filter
+	LoadGrayImageFromGrayBmpFile(src2, "Tim2.bmp");  // Load the image
+	DoGaussianFiltration(&src2[0][0], filter_5, FILTER_SIZE_5);  // Perform the filtration
+	StoreGrayImageAsGrayBmpFile(src2, "Tim2LPF5c.bmp");  // Save the blurred image with 5x5 filter
 
 	// Apply a 7x7 Gaussian filter
 	const int FILTER_HALF_SIZE_7 = 3;
 	const int FILTER_SIZE_7 = 2 * FILTER_HALF_SIZE_7 + 1;
-	double filter_7[FILTER_SIZE_7];
+	double offset2 = 0.16;
+	double filter_7[FILTER_SIZE_7] = { 2/1003 + offset2, 22/1003 + offset2, 97/1003 + offset2, 159/1003 + offset2, 97/1003 + offset2, 22/1003 + offset2, 2/1003 + offset2 };  // Use the provided filter
 
-	LoadGrayImageFromTrueColorBmpFile(src, "Tim1.bmp");  // Reload the original image
-	PrepareGaussianFilter(filter_7, FILTER_SIZE_7, 1);
-	DoGaussianFiltration(&src[0][0], filter_7, FILTER_SIZE_7);  // Perform the filtration
-	StoreGrayImageAsGrayBmpFile(src, "Tim1LPF7c.bmp");  // Save the blurred image with 7x7 filter
+	LoadGrayImageFromTrueColorBmpFile(src3, "Tim1.bmp");  // Reload the original image
+	DoGaussianFiltration(&src3[0][0], filter_7, FILTER_SIZE_7);  // Perform the filtration
+	StoreGrayImageAsGrayBmpFile(src3, "Tim1LPF7c.bmp");  // Save the blurred image with 7x7 filter
 
-	LoadGrayImageFromGrayBmpFile(src, "Tim2.bmp");  // Load the image
-	PrepareGaussianFilter(filter_7, FILTER_SIZE_7, 1);   // Create the filter 7x7
-	DoGaussianFiltration(&src[0][0], filter_7, FILTER_SIZE_7);  // Perform the filtration
-	StoreGrayImageAsGrayBmpFile(src, "Tim2LPF7c.bmp");  // Save the blurred image with 7x7 filter
+	LoadGrayImageFromGrayBmpFile(src4, "Tim2.bmp");  // Load the image
+	DoGaussianFiltration(&src4[0][0], filter_7, FILTER_SIZE_7);  // Perform the filtration
+	StoreGrayImageAsGrayBmpFile(src4, "Tim2LPF7c.bmp");  // Save the blurred image with 7x7 filter
 
+
+	
 	//********* part 2 of the task - "Blur test Image by using FFT and “restore it” *************
 
 	// Load and process the Tim1.bmp image
-	LoadGrayImageFromTrueColorBmpFile(ProccesIMG, "Tim1.bmp");
-	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Tim1_gray.bmp");  //**for debugging
+	LoadGrayImageFromTrueColorBmpFile(ProccesIMG1, "Tim1.bmp");
+	StoreGrayImageAsGrayBmpFile(ProccesIMG1, "Tim1_gray.bmp");  //**for debugging
 
-	/// FFT filtration using gaussian filter - section 3 
-	Work(ProccesIMG, FILTER_SIZE_1);
-	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Tim1LPFF.bmp");
+	/// FFT filtration to blur using gaussian filter - section 3 
+	Work(ProccesIMG1, FILTER_SIZE_1);
+	StoreGrayImageAsGrayBmpFile(ProccesIMG1, "Tim1LPFF.bmp");
 
-	// convolution filtration using HPF with different kernels - here Applying kernel_2 - section 4 
-	DoFiltationByConvolution(ProccesIMG, dst, kernel_2);
-	StoreGrayImageAsGrayBmpFile(dst, "Tim1_HighPass_kernel_2.bmp");
+	// convolution filtration using HPF with different kernels - here Applying kernel_1 on src1- section 4 
+	DoFiltationByConvolution(src1, dst, kernel_1);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim1LPF5cHFEF1c.bmp"); //Tim1 blurred by gaussian in size 5 restored by kernel_1
 
-	// convolution filtration using HPF with different kernels - here Applying kernel_3 - section 4 
-	DoFiltationByConvolution(ProccesIMG, dst, kernel_3);
-	StoreGrayImageAsGrayBmpFile(dst, "Tim1_HighPass_kernel_3.bmp");
+	// convolution filtration using HPF with different kernels - here Applying kernel_1 on src3 - section 4 
+	DoFiltationByConvolution(src3, dst, kernel_1);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim1LPF7cHFEF1c.bmp"); //Tim1 blurred by gaussian in size 7 restored by kernel_1
+	//------------------------------------------------------------//
+	// convolution filtration using HPF with different kernels - here Applying kernel_2 on src1 - section 4 
+	DoFiltationByConvolution(src1, dst, kernel_2);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim1LPF5cHFEF2c.bmp"); //Tim1 blurred by gaussian in size 5 restored by kernel_2
 
-	// convolution filtration using HPF with different kernels - here Applying kernel_4 - section 4 
-	DoFiltationByConvolution(ProccesIMG, dst, kernel_4);
-	StoreGrayImageAsGrayBmpFile(dst, "Tim1_HighPass_kernel_4.bmp");
+	// convolution filtration using HPF with different kernels - here Applying kernel_2 on src3 - section 4 
+	DoFiltationByConvolution(src3, dst, kernel_2);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim1LPF7cHFEF2c.bmp");  //Tim1 blurred by gaussian in size 7 restored by kernel_2
+	//------------------------------------------------------------//
+	// convolution filtration using HPF with different kernels - here Applying kernel_3 on src1 - section 4 
+	DoFiltationByConvolution(src1, dst, kernel_3);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim1LPF5cHFEF3c.bmp"); //Tim1 blurred by gaussian in size 5 restored by kernel_3
 
-	//// convolution filtration using HPF with different kernels - here Applying kernel_5 - section 4 
-	DoFiltationByConvolution(ProccesIMG, dst, sharpening);
-	StoreGrayImageAsGrayBmpFile(dst, "Tim1_HighPass_kernel_sharpening.bmp");
+	// convolution filtration using HPF with different kernels - here Applying kernel_3 on src3 - section 4 
+	DoFiltationByConvolution(src3, dst, kernel_3);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim1LPF7cHFEF3c.bmp"); //Tim1 blurred by gaussian in size 7 restored by kernel_3
+	//------------------------------------------------------------//
+	//// convolution filtration using HPF with different kernels - here Applying kernel_4 on src1 - section 4 
+	DoFiltationByConvolution(src1, dst, kernel_4);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim1LPF5cHFEF4c.bmp");  //Tim1 blurred by gaussian in size 5 restored by kernel_4
 
-	/// FFT filtration using HPF to restore (inhance) the blured image - section 5 
-	WorkHPEF(ProccesIMG, FILTER_SIZE_1);
-	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Tim1HPEF.bmp");
+	//// convolution filtration using HPF with different kernels - here Applying kernel_4 on src3 - section 4 
+	DoFiltationByConvolution(src3, dst, kernel_4);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim1LPF7cHFEF4c.bmp"); //Tim1 blurred by gaussian in size 7 restored by kernel_4
+	//------------------------------------------------------------//
+	/// FFT filtration using HPF to restore (enhance) the blurred image - section 5 
+	WorkHPEF2(ProccesIMG1, FILTER_SIZE_3);
+	StoreGrayImageAsGrayBmpFile(ProccesIMG1, "Tim1HPEF.bmp");
 	
 
 	//**************************************************************
 	//***** repeat the steps before on Tim2.bmp given image **********
 
 	// Load and process the Tim2.bmp image
-	LoadGrayImageFromGrayBmpFile(ProccesIMG, "Tim2.bmp");
+	LoadGrayImageFromGrayBmpFile(ProccesIMG2, "Tim2.bmp");
 
 	/// FFT filtration using gaussian filter - section 3 
-	Work(ProccesIMG, FILTER_SIZE_1);
-	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Tim2LPFF.bmp");
+	Work(ProccesIMG2, FILTER_SIZE_1);
+	StoreGrayImageAsGrayBmpFile(ProccesIMG2, "Tim2LPFF.bmp");
 
-	// convolution filtration using HPF with different kernels - here Applying kernel_2 - section 4 
-	DoFiltationByConvolution(ProccesIMG, dst, kernel_2);
-	StoreGrayImageAsGrayBmpFile(dst, "Tim2_HighPass_kernel_2.bmp");
+	// convolution filtration using HPF with different kernels - here Applying kernel_1 on src2- section 4 
+	DoFiltationByConvolution(src2, dst, kernel_1);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim2LPF5cHFEF1c.bmp"); //Tim2 blurred by gaussian in size 5 restored by kernel_1
 
-	// convolution filtration using HPF with different kernels - here Applying kernel_3 - section 4 
-	DoFiltationByConvolution(ProccesIMG, dst, kernel_3);
-	StoreGrayImageAsGrayBmpFile(dst, "Tim2_HighPass_kernel_3.bmp");
+	// convolution filtration using HPF with different kernels - here Applying kernel_1 on src4 - section 4 
+	DoFiltationByConvolution(src4, dst, kernel_1);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim2LPF7cHFEF1c.bmp"); //Tim2 blurred by gaussian in size 7 restored by kernel_1
+	//------------------------------------------------------------//
+	// convolution filtration using HPF with different kernels - here Applying kernel_2 on src2 - section 4 
+	DoFiltationByConvolution(src2, dst, kernel_2);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim2LPF5cHFEF2c.bmp"); //Tim2 blurred by gaussian in size 5 restored by kernel_2
 
-	// convolution filtration using HPF with different kernels - here Applying kernel_4 - section 4 
-	DoFiltationByConvolution(ProccesIMG, dst, kernel_4);
-	StoreGrayImageAsGrayBmpFile(dst, "Tim2_HighPass_kernel_4.bmp");
+	// convolution filtration using HPF with different kernels - here Applying kernel_2 on src4 - section 4 
+	DoFiltationByConvolution(src4, dst, kernel_2);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim2LPF7cHFEF2c.bmp"); //Tim2 blurred by gaussian in size 7 restored by kernel_2
+	//------------------------------------------------------------//
+	// convolution filtration using HPF with different kernels - here Applying kernel_3 on src2 - section 4 
+	DoFiltationByConvolution(src2, dst, kernel_3);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim2LPF5cHFEF3c.bmp"); //Tim2 blurred by gaussian in size 5 restored by kernel_3
 
-	//// convolution filtration using HPF with different kernels - here Applying kernel_5 - section 4 
-	DoFiltationByConvolution(ProccesIMG, dst, sharpening);
-	StoreGrayImageAsGrayBmpFile(dst, "Tim2_HighPass_kernel_sharpening.bmp");
+	// convolution filtration using HPF with different kernels - here Applying kernel_3 on src4 - section 4 
+	DoFiltationByConvolution(src4, dst, kernel_3);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim2LPF7cHFEF3c.bmp"); //Tim2 blurred by gaussian in size 7 restored by kernel_3
+	//------------------------------------------------------------//
+	//// convolution filtration using HPF with different kernels - here Applying kernel_4 on src2 - section 4 
+	DoFiltationByConvolution(src2, dst, kernel_4);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim2LPF5cHFEF4c.bmp"); //Tim2 blurred by gaussian in size 5 restored by kernel_4
 
-	/// FFT filtration using HPF to restore (inhance) the blured image - section 5 
-	WorkHPEF(ProccesIMG, FILTER_SIZE_1);
-	StoreGrayImageAsGrayBmpFile(ProccesIMG, "Tim2HPEF.bmp");
+	//// convolution filtration using HPF with different kernels - here Applying kernel_4 on src4 - section 4 
+	DoFiltationByConvolution(src4, dst, kernel_4);
+	StoreGrayImageAsGrayBmpFile(dst, "Tim2LPF7cHFEF4c.bmp"); //Tim2 blurred by gaussian in size 7 restored by kernel_4
+	//------------------------------------------------------------//
+	/// FFT filtration using HPF to restore (enhance) the blurred image - section 5 
+	WorkHPEF1(ProccesIMG2, FILTER_SIZE_3);
+	StoreGrayImageAsGrayBmpFile(ProccesIMG2, "Tim2HPEF.bmp");
 
 	cout << "Press any key to exit" << endl;
 	_getch();
