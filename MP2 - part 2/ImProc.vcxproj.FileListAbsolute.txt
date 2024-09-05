@@ -1,4 +1,0 @@
-C:\Users\user\Desktop\לימודים\שנה ד\סמסטר א\עיבוד תמונה\Assignment 52\ImProc.exe
-C:\Users\user\Desktop\לימודים\שנה ד\סמסטר א\עיבוד תמונה\Assignment 52\ImProc.pdb
-C:\Users\user\Desktop\לימודים\עיבוד תמונה\רפרנס\Assignment 52\ImProc.exe
-C:\Users\user\Documents\GitHub\image-processing\MP2 - part 2\ImProc.exe
