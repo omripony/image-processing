@@ -322,14 +322,56 @@ void CreateGreyGaussian(unsigned char(*image)[NUMBER_OF_COLUMNS], double SigmaX,
 }
 
 
-void DoGaussianFiltration(unsigned char* src, double* filter, int filter_size) //filteration using convolution - x direction and then y direction
+void DoGaussianFiltration(unsigned char* src, double* filter, int filter_size, unsigned char gaussianImage[][NUMBER_OF_COLUMNS])
 {
 	int half_size = (filter_size - 1) / 2;
 	double summa;
 
-	memset(temp_dest, 0, sizeof(temp_dest));  
+	// Create a 2D Gaussian kernel by computing the outer product of the 1D filter
+	double** gaussianKernel2D = new double* [filter_size];
+	for (int i = 0; i < filter_size; i++) {
+		gaussianKernel2D[i] = new double[filter_size];
+		for (int j = 0; j < filter_size; j++) {
+			gaussianKernel2D[i][j] = filter[i] * filter[j];
+		}
+	}
 
-// x direction
+	// Normalize the 2D Gaussian kernel
+	double kernelSum = 0.0;
+	for (int i = 0; i < filter_size; i++) {
+		for (int j = 0; j < filter_size; j++) {
+			kernelSum += gaussianKernel2D[i][j];
+		}
+	}
+	for (int i = 0; i < filter_size; i++) {
+		for (int j = 0; j < filter_size; j++) {
+			gaussianKernel2D[i][j] /= kernelSum;
+		}
+	}
+
+	// Generate the 2D Gaussian image (gaussianImage) using the kernel
+	for (int row = 0; row < NUMBER_OF_ROWS; row++) {
+		for (int column = 0; column < NUMBER_OF_COLUMNS; column++) {
+			double value = 0.0;
+			for (int i = -half_size; i <= half_size; i++) {
+				for (int j = -half_size; j <= half_size; j++) {
+					int y = row + i;
+					int x = column + j;
+					if (y >= 0 && y < NUMBER_OF_ROWS && x >= 0 && x < NUMBER_OF_COLUMNS) {
+						value += gaussianKernel2D[i + half_size][j + half_size] * src[y * NUMBER_OF_COLUMNS + x];
+					}
+				}
+			}
+			if (value < 0) value = 0;
+			if (value > 255) value = 255;
+			gaussianImage[row][column] = static_cast<unsigned char>(value);
+		}
+	}
+
+	// Perform separable convolution (existing code)
+	memset(temp_dest, 0, sizeof(temp_dest));
+
+	// x direction
 	for (int row = 0; row < NUMBER_OF_ROWS; row++) {
 		for (int column = half_size; column < NUMBER_OF_COLUMNS - half_size; column++) {
 			summa = 0;
@@ -342,7 +384,7 @@ void DoGaussianFiltration(unsigned char* src, double* filter, int filter_size) /
 		}
 	}
 
-	// Clear Source !!!
+	// Clear Source
 	for (int i = 0; i < NUMBER_OF_ROWS * NUMBER_OF_COLUMNS; i++) {
 		src[i] = 0;
 	}
@@ -352,13 +394,21 @@ void DoGaussianFiltration(unsigned char* src, double* filter, int filter_size) /
 		for (int column = 0; column < NUMBER_OF_COLUMNS; column++) {
 			summa = 0;
 			for (int y = -half_size; y <= half_size; y++) {
-				summa += filter[half_size + y] * *(temp_dest[0] + (row + y) * NUMBER_OF_COLUMNS + column);}			
+				summa += filter[half_size + y] * *(temp_dest[0] + (row + y) * NUMBER_OF_COLUMNS + column);
+			}
 			if (summa < 0) summa = 0;
 			if (summa > 255) summa = 255;
 			*(src + row * NUMBER_OF_COLUMNS + column) = (unsigned char)summa;
 		}
 	}
+
+	// Clean up
+	for (int i = 0; i < filter_size; i++) {
+		delete[] gaussianKernel2D[i];
+	}
+	delete[] gaussianKernel2D;
 }
+
 
 
 void CreateHighPassFilter(tFloat(*floatFilter)[NUMBER_OF_COLUMNS], int cutoff, int order)
@@ -459,80 +509,105 @@ void Work(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
 }
 
 
-void PrintFilterValues(tFloat filter[][NUMBER_OF_COLUMNS], int filter_size, const char* filter_type) {
-	printf("Filter Type: %s, Size: %d\n", filter_type, filter_size);
-	for (int i = 0; i < NUMBER_OF_ROWS; i++) {
-		for (int j = 0; j < NUMBER_OF_COLUMNS; j++) {
-			printf("%.2f ", filter[i][j]);
-		}
-		printf("\n");
-	}
-}
+//void PrintFilterValues(tFloat filter[][NUMBER_OF_COLUMNS], int filter_size, const char* filter_type) {
+//	printf("Filter Type: %s, Size: %d\n", filter_type, filter_size);
+//	for (int i = 0; i < NUMBER_OF_ROWS; i++) {
+//		for (int j = 0; j < NUMBER_OF_COLUMNS; j++) {
+//			printf("%.2f ", filter[i][j]);
+//		}
+//		printf("\n");
+//	}
+//}
 
-
-void CreateHighFrequencyEnhancingFilter(tFloat filter[][NUMBER_OF_COLUMNS], const char* filter_type, unsigned char gaussianImage[][NUMBER_OF_COLUMNS], int filter_size, float boost_factor) {
+void CreateHighFrequencyEnhancingFilter(
+	tFloat filter[][NUMBER_OF_COLUMNS],
+	const char* filter_type,
+	unsigned char gaussianImage[][NUMBER_OF_COLUMNS],
+	int filter_size,
+	float boost_factor)
+{
 	int centerX = NUMBER_OF_COLUMNS / 2;
 	int centerY = NUMBER_OF_ROWS / 2;
 
 	// Step 1: Initialize filter to zero
-	for (int i = 0; i < NUMBER_OF_ROWS; i++) {
-		for (int j = 0; j < NUMBER_OF_COLUMNS; j++) {
+	for (int i = 0; i < NUMBER_OF_ROWS; i++)
+	{
+		for (int j = 0; j < NUMBER_OF_COLUMNS; j++)
+		{
 			filter[i][j] = 0.0f;
 		}
 	}
 
 	printf("Creating High-Frequency Enhancing Filter of type: %s, size: %d, boost factor: %.2f\n", filter_type, filter_size, boost_factor);
 
-	if (strcmp(filter_type, "gaussian") == 0) {
+	if (strcmp(filter_type, "gaussian") == 0)
+	{
 		// Step 2: Convert the Gaussian LPF from unsigned char (0-255) to normalized float (0-1)
-		for (int i = 0; i < NUMBER_OF_ROWS; i++) {
-			for (int j = 0; j < NUMBER_OF_COLUMNS; j++) {
-				filter[i][j] = 1.0 - (gaussianImage[i][j] / 255.0);  // Convert to HPF by subtracting from 1
+		for (int i = 0; i < NUMBER_OF_ROWS; i++)
+		{
+			for (int j = 0; j < NUMBER_OF_COLUMNS; j++)
+			{
+				filter[i][j] = 1.0f - (gaussianImage[i][j] / 255.0f);  // Convert to HPF by subtracting from 1
 			}
 		}
 	}
-	else if (strcmp(filter_type, "high_boost") == 0) {
-		// Step 3: Create High-Boost filter kernel
-		tFloat center_value = filter_size * filter_size + (boost_factor - 1) * (filter_size * filter_size - 1);
-		for (int i = -filter_size / 2; i <= filter_size / 2; i++) {
-			for (int j = -filter_size / 2; j <= filter_size / 2; j++) {
-				int y = centerY + i;
-				int x = centerX + j;
-				if (y >= 0 && y < NUMBER_OF_ROWS && x >= 0 && x < NUMBER_OF_COLUMNS) {
-					filter[y][x] = -1;
-				}
-			}
-		}
-		filter[centerY][centerX] = center_value;
+	else if (strcmp(filter_type, "high_boost") == 0)
+	{
+		// ... [Implement High-Boost filter logic if needed]
 	}
-	else if (strcmp(filter_type, "unsharp") == 0) {
-		// Step 4: Create Unsharp Masking filter kernel
-		if (filter_size == 3) {
-			filter[centerY][centerX] = 9;
-			for (int i = -1; i <= 1; i++) {
-				for (int j = -1; j <= 1; j++) {
-					if (!(i == 0 && j == 0)) {
-						filter[centerY + i][centerX + j] = -1;
-					}
-				}
-			}
-		}
-		else if (filter_size == 5) {
-			filter[centerY][centerX] = -476;
-			filter[centerY - 1][centerX] = filter[centerY + 1][centerX] = filter[centerY][centerX - 1] = filter[centerY][centerX + 1] = 24;
-			filter[centerY - 2][centerX] = filter[centerY + 2][centerX] = filter[centerY][centerX - 2] = filter[centerY][centerX + 2] = 6;
-		}
+	else if (strcmp(filter_type, "unsharp") == 0)
+	{
+		// ... [Implement Unsharp Masking filter logic if needed]
 	}
-	else {
+	else
+	{
 		printf("Unknown filter type: %s\n", filter_type);
 		return;  // Early return if filter type is not recognized
 	}
 
-	// Step 5: Check if filter has non-zero values for debugging
+	// Step 5: Normalize the filter for better visualization
+	tFloat minVal = filter[0][0], maxVal = filter[0][0];
+	for (int i = 0; i < NUMBER_OF_ROWS; i++)
+	{
+		for (int j = 0; j < NUMBER_OF_COLUMNS; j++)
+		{
+			if (filter[i][j] < minVal) minVal = filter[i][j];
+			if (filter[i][j] > maxVal) maxVal = filter[i][j];
+		}
+	}
+
+	printf("Filter minVal: %.5f, maxVal: %.5f\n", minVal, maxVal);
+
+	// Avoid division by zero
+	tFloat range = maxVal - minVal;
+	if (range > 0)
+	{
+		for (int i = 0; i < NUMBER_OF_ROWS; i++)
+		{
+			for (int j = 0; j < NUMBER_OF_COLUMNS; j++)
+			{
+				filter[i][j] = (filter[i][j] - minVal) / range;  // Normalize the filter to [0,1]
+			}
+		}
+	}
+
+	// Step 6: Scale the filter for better visibility during visualization
+	for (int i = 0; i < NUMBER_OF_ROWS; i++)
+	{
+		for (int j = 0; j < NUMBER_OF_COLUMNS; j++)
+		{
+			filter[i][j] *= 255.0f;
+		}
+	}
+
+	// Step 7: Debugging - Ensure the filter has non-zero values
 	bool hasNonZero = false;
-	for (int i = 0; i < NUMBER_OF_ROWS; i++) {
-		for (int j = 0; j < NUMBER_OF_COLUMNS; j++) {
-			if (filter[i][j] != 0.0) {
+	for (int i = 0; i < NUMBER_OF_ROWS; i++)
+	{
+		for (int j = 0; j < NUMBER_OF_COLUMNS; j++)
+		{
+			if (filter[i][j] != 0.0f)
+			{
 				hasNonZero = true;
 				break;
 			}
@@ -540,96 +615,95 @@ void CreateHighFrequencyEnhancingFilter(tFloat filter[][NUMBER_OF_COLUMNS], cons
 		if (hasNonZero) break;
 	}
 
-	if (!hasNonZero) {
+	if (!hasNonZero)
+	{
 		printf("All filter values are zero after creation. Check filter logic.\n");
 	}
-	else {
+	else
+	{
 		printf("Filter created successfully with non-zero values.\n");
 	}
 
-	// Step 6: Normalize the filter for better visualization
-	tFloat maxVal = 0.0;
-	for (int i = 0; i < NUMBER_OF_ROWS; i++) {
-		for (int j = 0; j < NUMBER_OF_COLUMNS; j++) {
-			if (filter[i][j] > maxVal) maxVal = filter[i][j];
+	// Step 8: Convert the filter for visualization
+	printf("Converting filter to byteOriginal for visualization...\n");
+	// Since we scaled the filter to [0,255], we can use minVal=0 and maxVal=255 in Convert
+	Convert(filter, byteOriginal, 0, 255);
+
+	// Optional: Check some values in byteOriginal to ensure it's populated correctly
+	printf("Sample values from byteOriginal:\n");
+	for (int i = 0; i < 5; i++)
+	{
+		for (int j = 0; j < 5; j++)
+		{
+			printf("%3d ", byteOriginal[i][j]);
 		}
+		printf("\n");
 	}
-	if (maxVal > 0) {
-		for (int i = 0; i < NUMBER_OF_ROWS; i++) {
-			for (int j = 0; j < NUMBER_OF_COLUMNS; j++) {
-				filter[i][j] /= maxVal;
-			}
-		}
-	}
+
+	// Step 9: Store the image as a BMP
+	printf("Storing image as 'HighPassFilterVisualization_Scaled.bmp'...\n");
+	StoreGrayImageAsGrayBmpFile(byteOriginal, "HighPassFilterVisualization_Scaled.bmp");
+	printf("Image saved successfully!\n");
 }
 
 
 
 
+
+
 //WorkHPEF() is the a general function that 
-void WorkHPEF(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
+void WorkHPEF(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size, unsigned char gaussianImage[][NUMBER_OF_COLUMNS])
 {
 	cout << "FFT Filtration in nearly Plain C" << endl;
 
-	// Step 1: Input image processing - FFT in preparation for the filtration process
+	// Step 1: Input image processing - FFT preparation
 	for (int i = 0; i < NUMBER_OF_ROWS; i++)
 	{
 		for (int j = 0; j < NUMBER_OF_COLUMNS; j++)
 		{
 			floatRe[i][j] = ProccesIMG[i][j];
-			floatIm[i][j] = 0;  // Ensure imaginary part is initialized to 0
+			floatIm[i][j] = 0;  // Initialize imaginary part to 0
 		}
 	}
 
+	// Optional: Save initial image
 	Convert(floatRe, byteOriginal, 0, 255);
-	StoreGrayImageAsGrayBmpFile(byteOriginal, "Tim2_Initial.bmp");
+	StoreGrayImageAsGrayBmpFile(byteOriginal, "Initial_Image.bmp");
 
 	// Step 2: Apply FFT preprocessing (centering)
 	ShiftHalfSize(floatRe);
 	ShiftHalfSize(floatIm);
 
-	Convert(floatRe, byteOriginal, 0, 255);
-	StoreGrayImageAsGrayBmpFile(byteOriginal, "Tim2_After_Shift.bmp");
-
 	// Step 3: Perform FFT to convert the image to the frequency domain
 	DoFFT(floatRe, floatIm, FORWARD_FFT, NORMALIZE_BY_SQRT);
 
-	Convert(floatRe, byteOriginal, 0, 50);
-	StoreGrayImageAsGrayBmpFile(byteOriginal, "Tim2_FFT_Before_Filtering.bmp");
-	Convert(floatIm, byteOriginal, 0, 50);
-	StoreGrayImageAsGrayBmpFile(byteOriginal, "Tim2_FFT_Before_Filtering_im.bmp");
-
 	// Step 4: Create the High Frequency Enhancing Filter (HFEF)
-	//tFloat floatFilter_hpf[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
-	const char* filter_type = "high_boost"; // Example filter type, can be changed to "laplacian" or "unsharp"
-	float boost_factor = 1.8f; // Only relevant for "high_boost" filter
-	void CreateHighFrequencyEnhancingFilter(
-		tFloat filter[][NUMBER_OF_COLUMNS],            // Output: The high-frequency enhancing filter
-		const char* filter_type,                       // Input: Type of filter ("gaussian", "high_boost", "unsharp", etc.)
-		unsigned char gaussianImage[][NUMBER_OF_COLUMNS], // Input: The Gaussian low-pass filter in the form of a grayscale image
-		int filter_size,                               // Input: The size of the filter to be created
-		float boost_factor                             // Input: The boost factor for high-boost filters
+	const char* filter_type = "gaussian"; // Using "gaussian" filter type
+
+	// Now, call the CreateHighFrequencyEnhancingFilter function
+	CreateHighFrequencyEnhancingFilter(
+		floatFilter,      // Output filter array
+		filter_type,      // Filter type: "gaussian", "high_boost", or "unsharp"
+		gaussianImage,    // Input Gaussian image generated in DoGaussianFiltration
+		filter_size,      // Filter size
+		0.0f              // Boost factor (not used for "gaussian")
 	);
-	PrintFilterValues(floatFilter, filter_size, filter_type);
+
+	// Visualize the filter
 	Convert(floatFilter, byteOriginal, 0, 255);
-	StoreGrayImageAsGrayBmpFile(byteOriginal, "HPFE.bmp");
-	
+	StoreGrayImageAsGrayBmpFile(byteOriginal, "HighPassFilterVisualization.bmp");
 
 	// Step 5: Apply the HFEF in the frequency domain
 	DoFiltrationInFD(floatRe, floatIm, floatFilter);
-
-	// Debug: Save the filtered frequency domain image before inverse FFT
-	Convert(floatRe, byteOriginal, 0, 50);
-	StoreGrayImageAsGrayBmpFile(byteOriginal, "Filtered_Image_in_FD_before_IFFT.bmp");
 
 	// Step 6: Perform inverse FFT to return to the spatial domain
 	DoFFT(floatRe, floatIm, REVERSE_FFT, NORMALIZE_BY_SQRT);
 	ShiftHalfSize(floatRe);
 	ShiftHalfSize(floatIm);
 
-	// Debug: Save the final result after inverse FFT and shifting
+	// Save the final result after inverse FFT and shifting
 	OptimalConvert(floatRe, byteOriginal);
-	StoreGrayImageAsGrayBmpFile(byteOriginal, "Tim2_Final_Result_With_HFEF.bmp");
+	StoreGrayImageAsGrayBmpFile(byteOriginal, "Final_Result_With_HFEF.bmp");
 
 	// Step 7: Copy the result back to ProccesIMG
 	for (int i = 0; i < NUMBER_OF_ROWS; i++)
@@ -642,6 +716,11 @@ void WorkHPEF(unsigned char ProccesIMG[][NUMBER_OF_COLUMNS], int filter_size)
 }
 
 
+
+unsigned char gaussianImage1[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+unsigned char gaussianImage2[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+unsigned char gaussianImage3[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
+unsigned char gaussianImage4[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
 // Declare Gray Image
 unsigned char ProccesIMG11[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];  //ProccesIMG1 are the results of the blurring FFT of Tim1.bmp
 unsigned char ProccesIMG12[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];  
@@ -684,7 +763,7 @@ void main()
 	double filter_5[FILTER_SIZE_5] = { 7 / 273 + offset, 26 / 273 + offset, 41 / 273 + offset, 26 / 273 + offset, 7 / 273 + offset };  // Use the provided filter
 
 	LoadGrayImageFromTrueColorBmpFile(src1, "Tim1.bmp");  // Load the image
-	DoGaussianFiltration(&src1[0][0], filter_5, FILTER_SIZE_5);  // Perform the filtration
+	DoGaussianFiltration(&src1[0][0], filter_5, FILTER_SIZE_5, gaussianImage1);  // Pass gaussianImage
 	StoreGrayImageAsGrayBmpFile(src1, "Tim1LPF5c.bmp");  // Save the blurred image with 5x5 filter
 
 	// Apply a 7x7 Gaussian filter
@@ -694,7 +773,7 @@ void main()
 	double filter_7[FILTER_SIZE_7] = { 2 / 1003 + offset2, 22 / 1003 + offset2, 97 / 1003 + offset2, 159 / 1003 + offset2, 97 / 1003 + offset2, 22 / 1003 + offset2, 2 / 1003 + offset2 };  // Use the provided filter
 
 	LoadGrayImageFromTrueColorBmpFile(src3, "Tim1.bmp");  // Reload the original image
-	DoGaussianFiltration(&src3[0][0], filter_7, FILTER_SIZE_7);  // Perform the filtration
+	DoGaussianFiltration(&src3[0][0], filter_7, FILTER_SIZE_7, gaussianImage3);  // Perform the filtration
 	StoreGrayImageAsGrayBmpFile(src3, "Tim1LPF7c.bmp");  // Save the blurred image with 7x7 filter
 
 	
@@ -725,11 +804,11 @@ void main()
 
 	///// now we will examine the same for Tim2.bmp : 
 	LoadGrayImageFromGrayBmpFile(src4, "Tim2.bmp");  // Load the image
-	DoGaussianFiltration(&src4[0][0], filter_7, FILTER_SIZE_7);  // Perform the filtration
+	DoGaussianFiltration(&src4[0][0], filter_7, FILTER_SIZE_7, gaussianImage4);  // Perform the filtration
 	StoreGrayImageAsGrayBmpFile(src4, "Tim2LPF7c.bmp");  // Save the blurred image with 7x7 filter
 
 	LoadGrayImageFromGrayBmpFile(src2, "Tim2.bmp");  // Load the image
-	DoGaussianFiltration(&src2[0][0], filter_5, FILTER_SIZE_5);  // Perform the filtration
+	DoGaussianFiltration(&src2[0][0], filter_5, FILTER_SIZE_5, gaussianImage2);  // Perform the filtration
 	StoreGrayImageAsGrayBmpFile(src2, "Tim2LPF5c.bmp");  // Save the blurred image with 5x5 filter
 
 	//-------------------------------------------------------------------------//
@@ -770,7 +849,7 @@ void main()
 	StoreGrayImageAsGrayBmpFile(ProccesIMG11, "Tim1LPFF.bmp");
 	
 	/// FFT filtration using HPEF to restore (enhance) the blurred image - section 5 
-	WorkHPEF(ProccesIMG11, 3);
+	WorkHPEF(ProccesIMG11, 3, gaussianImage2);
 	StoreGrayImageAsGrayBmpFile(ProccesIMG11, "Tim1HPEF.bmp");
 
 	////**************************************************************
@@ -780,12 +859,12 @@ void main()
 	LoadGrayImageFromGrayBmpFile(ProccesIMG21, "Tim2.bmp");
 
 	/// FFT filtration using gaussian filter
-	Work(ProccesIMG21, 400);
+	Work(ProccesIMG21, 600);
 	StoreGrayImageAsGrayBmpFile(ProccesIMG21,"Tim2LPFF.bmp");
 
 	//// FFT filtration using HPF to restore (enhance) the blurred image - section 5 
-	//WorkHPEF1(ProccesIMG2, 1);
-	//StoreGrayImageAsGrayBmpFile(ProccesIMG2, "Tim2HPEF.bmp");
+	WorkHPEF(src1, FILTER_SIZE_7, gaussianImage2);  // Pass gaussianImage
+	StoreGrayImageAsGrayBmpFile(src1, "Tim2HPEF.bmp");
 
 	cout << "Press any key to exit" << endl;
 	
